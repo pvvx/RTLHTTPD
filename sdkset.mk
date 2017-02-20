@@ -5,7 +5,7 @@ CFLAGS += -mcpu=cortex-m3 -mthumb -g2 -Os -std=gnu99
 CFLAGS += -fno-common -fmessage-length=0 -ffunction-sections -fdata-sections -fomit-frame-pointer -fno-short-enums -fsigned-char 
 CFLAGS += -w -Wno-pointer-sign    
 LFLAGS = -mcpu=cortex-m3 -mthumb -g -Os --specs=nano.specs -nostartfiles 
-LFLAGS += -Wl,--gc-sections -Wl,--cref -Wl,--entry=Reset_Handler -Wl,--no-enum-size-warning -Wl,--no-wchar-size-warning
+LFLAGS += -Wl,--gc-sections -Wl,--cref -Wl,--entry=Reset_Handler -Wl,--no-enum-size-warning -Wl,--no-wchar-size-warning -Wl,-nostdlib
 
 # LIBS
 # -------------------------------------------------------------------
@@ -369,7 +369,7 @@ ADD_SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/flash_eep.c
 #ADD_SRC_C += sdk/component/common/example/mdns/example_mdns.c
 #ADD_SRC_C += sdk/component/common/example/socket_select/example_socket_select.c
 #ADD_SRC_C += sdk/component/common/example/uart_atcmd/example_uart_atcmd.c
-#ADD_SRC_C += sdk/component/common/example/wlan_fast_connect/example_wlan_fast_connect.c
+ADD_SRC_C += sdk/component/common/example/wlan_fast_connect/example_wlan_fast_connect.c
 #ADD_SRC_C += sdk/component/common/example/xml/example_xml.c
 #ADD_SRC_C += sdk/component/common/example/example_entry.c
 #ADD_SRC_C += sdk/component/common/drivers/sdio/realtek/sdio_host/src/sd.c 
@@ -380,14 +380,29 @@ ADD_SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/flash_eep.c
 # PROJECT
 #=============================================
 #user main
+#ADD_SRC_C += project/src/user/main.c
+#INCLUDES += project/inc/user
+
+# components
+#SRC_C += sdk/component/common/network/netbios/netbios.c
+
+#include librtlhttpd/librtlhttpd.mk
+#=============================================
+# PROJECT
+#=============================================
+# openocd freertos helper
+ADD_SRC_C += project/src/FreeRTOS-openocd.c
+#user main
 ADD_SRC_C += project/src/user/main.c
+ADD_SRC_C += project/src/user/wc_mgr.c
+ADD_SRC_C += project/src/user/http_server.c
+ADD_SRC_C += project/src/user/cgi-test.c
 INCLUDES += project/inc/user
 
 # components
-SRC_C += sdk/component/common/network/netbios/netbios.c
-
 include librtlhttpd/librtlhttpd.mk
 
 
 
+#=============================================
 #=============================================
