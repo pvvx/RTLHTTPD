@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Connection" content="keep-alive, close">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<META HTTP-EQUIV="Cache-Control", CONTENT="no-store, no-cache, must-revalidate">
+<META HTTP-EQUIV="Cache-Control", CONTENT="no-Cache">
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<META HTTP-EQUIV="Expires" CONTENT="-1">
+<title>Upgrade firmware</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+<script type="text/javascript" src="140medley.min.js"></script>
+<script type="text/javascript" src="rtluploader.js"></script>
+</head>
+<body>
+
+<div id="main">
+<h1>Update RTL8710 firmware</h1>
+<input type="file" id="file" />
+Start&nbsp;address:<input type="text" value="851968" name="start_address" /><br>
+Auto&nbsp;erase: <input type="checkbox" name="auto_erase" value="on" checked />
+<p><br>
+<div id="remark">Loading...</div>
+<input type="submit" value="Upgrade!" onclick="doUpgrade()" />
+
+<div id="progressbar"><div id="progressbarinner"></div></div>
+<p>&nbsp;<p>&nbsp;<p>&nbsp;<p>&nbsp;<p>&nbsp;<p>
+<input type="submit" value="Reboot!" onclick="doReboot()" />
+</body>
+</html>
