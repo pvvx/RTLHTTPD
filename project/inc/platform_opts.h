@@ -8,20 +8,20 @@
 #define __PLATFORM_OPTS_H__
 
 /*For MP mode setting*/
-#define SUPPORT_MP_MODE			1
+#define SUPPORT_MP_MODE			0
 
 /**
  * For AT cmd Log service configurations
  */
-#define SUPPORT_LOG_SERVICE		0
+#define SUPPORT_LOG_SERVICE	0
 #if SUPPORT_LOG_SERVICE
-#define LOG_SERVICE_BUFLEN     	100 //can't larger than UART_LOG_CMD_BUFLEN(127)
-#define CONFIG_LOG_HISTORY		0
+#define LOG_SERVICE_BUFLEN     100 //can't larger than UART_LOG_CMD_BUFLEN(127)
+#define CONFIG_LOG_HISTORY	0
 #if CONFIG_LOG_HISTORY
-#define LOG_HISTORY_LEN    		5
+#define LOG_HISTORY_LEN    5
 #endif
-#define SUPPORT_INTERACTIVE_MODE	0	//on/off wifi_interactive_mode
-#define CONFIG_LOG_SERVICE_LOCK 	0
+#define SUPPORT_INTERACTIVE_MODE 0 //on/off wifi_interactive_mode
+#define CONFIG_LOG_SERVICE_LOCK 0
 #endif
 
 /**
@@ -56,26 +56,26 @@
 #define CONFIG_WLAN			1
 #if CONFIG_WLAN
 #define CONFIG_LWIP_LAYER	1
-#define CONFIG_AT_USR		1	// add pvxx
-#define CONFIG_AT_LWIP 		0	// add pvxx
-#define CONFIG_AT_SYS  		0	// add pvxx
-#define CONFIG_AT_WIFI 		0	// add pvxx
+#define CONFIG_AT_USR			1	// add pvxx
+//#define CONFIG_AT_LWIP 		1	// add pvxx
+//#define CONFIG_AT_SYS  		1	// add pvxx
+//#define CONFIG_AT_WIFI 		1	// add pvxx
 #define CONFIG_INIT_NET		1 	// init lwip layer when start up
-#define CONFIG_WIFI_IND_USE_THREAD	0// wifi indicate worker thread
+#define CONFIG_WIFI_IND_USE_THREAD	1	// wifi indicate worker thread
 
 //on/off relative commands in log service
 #define CONFIG_SSL_CLIENT	0
 #define CONFIG_WEBSERVER	0
-#define CONFIG_OTA_UPDATE	0
-#define CONFIG_BSD_TCP		0	//NOTE : Enable CONFIG_BSD_TCP will increase about 11KB code size
+#define CONFIG_OTA_UPDATE	1
+#define CONFIG_BSD_TCP		1	//NOTE : Enable CONFIG_BSD_TCP will increase about 11KB code size
 #define CONFIG_AIRKISS		0	//on or off tencent airkiss
 #define CONFIG_UART_SOCKET	0 	// Set: CONFIG_UART_EN, CONFIG_UART_SOCKET
-#define CONFIG_UART_XMODEM	0	//support uart xmodem upgrade or not (sdram!)
+#define CONFIG_UART_XMODEM	0	//support uart xmodem upgrade or not
 #define CONFIG_TRANSPORT	0	//on or off the at command for transport socket
 
 /* For WPS and P2P */
-#define CONFIG_ENABLE_WPS		0 //0
-#define CONFIG_ENABLE_P2P		0 //0
+#define CONFIG_ENABLE_WPS		1
+#define CONFIG_ENABLE_P2P		1
 #if CONFIG_ENABLE_P2P
 #define CONFIG_ENABLE_WPS_AP		1
 #undef CONFIG_WIFI_IND_USE_THREAD
@@ -149,7 +149,7 @@
 #undef CONFIG_LOG_SERVICE_LOCK
 #define CONFIG_LOG_SERVICE_LOCK 1
 #else
-#define CONFIG_EXAMPLE_WLAN_FAST_CONNECT 1
+#define CONFIG_EXAMPLE_WLAN_FAST_CONNECT 0
 #endif
 
 //#define CONFIG_EXAMPLE_UART_ADAPTER 1
@@ -157,7 +157,7 @@
 #define USE_FLASH_EEP 1
 #define CONFIG_WLAN_CONNECT_CB 1
 
-//#define CONFIG_FATFS_EN	1 // включить FatFs
+//#define CONFIG_FATFS_EN	1 // FatFs & SD
 #ifdef CONFIG_FATFS_EN
 // fatfs version
 #define FATFS_R_10C
@@ -168,5 +168,4 @@
 #define CONFIG_SDIO_HOST_EN   1
 #endif
 
-
-#endif
+#endif //__PLATFORM_OPTS_H__

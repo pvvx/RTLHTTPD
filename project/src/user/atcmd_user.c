@@ -17,27 +17,9 @@
 
 #include "sleep_ex_api.h"
 
-//#include "lwip/err.h"
-//#include "arch/cc.h"
-//#include "lwip/mem.h"
-//#include "lwip/tcp.h"
 #include "lwip/tcp_impl.h"
-//#include "lwip/udp.h"
 
 rtw_mode_t wifi_mode = RTW_MODE_STA;
-ext_server_setings ext_serv = {0,{0}}; //{ PLAY_PORT, { PLAY_SERVER }};
-
-#define DEBUG_AT_USER_LEVEL 1
-
-/******************************************************************************/
-/*
-#define	_AT_WLAN_SET_SSID_          "ATW0"
-#define	_AT_WLAN_SET_PASSPHRASE_    "ATW1"
-#define	_AT_WLAN_SET_KEY_ID_        "ATW2"
-#define	_AT_WLAN_JOIN_NET_          "ATWC"
-#define	_AT_WLAN_SET_MP3_URL_       "ATWS"
-*/
-//extern struct netif xnetif[NET_IF_NUM];
 
 /* fastconnect use wifi AT command. Not init_wifi_struct when log service disabled
  * static initialize all values for using fastconnect when log service disabled
@@ -54,26 +36,18 @@ static rtw_network_info_t wifi = {
 static rtw_ap_info_t ap = {0};
 static unsigned char password[65] = {0};
 
-int connect_cfg_read(void)
-{
-	bzero(&ext_serv, sizeof(ext_serv));
-	if(flash_read_cfg(&ext_serv, 0x5000, sizeof(ext_serv)) >= sizeof(ext_serv.port) + 2) {
-		ext_serv.port = 10201;
-		strcpy(ext_serv.url, "sesp8266/test.mp3");
-	}
-	return ext_serv.port;
-}
-
-
 _WEAK void connect_start(void)
 {
 #ifdef CONFIG_DEBUG_LOG
-	printf("Time at start %d ms.\n", xTaskGetTickCount());
+	info_printf("%s: Time at start %d ms.\n", __func__, xTaskGetTickCount());
 #endif
 }
 
 _WEAK void connect_close(void)
 {
+#ifdef CONFIG_DEBUG_LOG
+	info_printf("%s: Time at start %d ms.\n", __func__, xTaskGetTickCount());
+#endif
 }
 
 static void init_wifi_struct(void)
@@ -92,51 +66,10 @@ static void init_wifi_struct(void)
 	ap.channel = 1;
 }
 
-void fATW0(void *arg){
-	if(!arg){
-		printf("ATW0: Usage: ATW0=SSID\n");
-		goto exit;
-	}
-#if	DEBUG_AT_USER_LEVEL > 1
-	printf("ATW0: %s\n", (char*)arg);
-#endif
-	strcpy((char *)wifi.ssid.val, (char*)arg);
-	wifi.ssid.len = strlen((char*)arg);
-exit:
-	return;
-}
-
-void fATW1(void *arg){
-#if	DEBUG_AT_USER_LEVEL > 1
-    printf("ATW1: %s\n", (char*)arg);
-#endif
-	strcpy((char *)password, (char*)arg);
-	wifi.password = password;
-	wifi.password_len = strlen((char*)arg);
-	return;	
-}
-
-void fATW2(void *arg){
-#if	DEBUG_AT_USER_LEVEL > 1
-	printf("ATW2: %s\n", (char*)arg);
-#endif
-	if((strlen((const char *)arg) != 1 ) || (*(char*)arg <'0' ||*(char*)arg >'3')) {
-		printf("ATW2: Wrong WEP key id. Must be one of 0,1,2, or 3.\n");
-		return;
-	}
-	wifi.key_id = atoi((const char *)(arg));
-	return;
-}
-
-// Test
-void fATST(void *arg){
+// Mem info
+void fATST(void){
 	extern u8 __HeapLimit, __StackTop;
 	extern struct Heap g_tcm_heap;
-		//DBG_INFO_MSG_ON(_DBG_TCM_HEAP_); // On Debug TCM MEM
-#if	DEBUG_AT_USER_LEVEL > 1
-		printf("ATST: Mem info:\n");
-#endif
-//		vPortFree(pvPortMalloc(4)); // Init RAM heap
 		printf("\nCLK CPU\t\t%d Hz\nRAM heap\t%d bytes\nTCM heap\t%d bytes\n",
 				HalGetCpuClk(), xPortGetFreeHeapSize(), tcm_heap_freeSpace());
 		dump_mem_block_list();
@@ -155,65 +88,36 @@ void fATST(void *arg){
 #endif
 }
 
-// Set server, Close connect
-void fATWS(void *arg){
-	int   argc           = 0;
-	char *argv[MAX_ARGC] = {0};
-	if(arg) {
-       	argc = parse_param(arg, argv);
-    	if (argc == 2) {
-    		if(argv[1][0] == '?') {
-			    printf("ATWS: %s,%d\n", ext_serv.url, ext_serv.port);
-    		    return;
-    		}
-    		else if(strcmp(argv[1], "open") == 0) {
-    		    printf("ATWS: open %s:%d\n", ext_serv.url, ext_serv.port);
-    			connect_close();
-    		    return;
-    		}
-    		else if(strcmp(argv[1], "close") == 0) {
-    		    printf("ATWS: close\n");
-    			connect_close();
-    		    return;
-    		}
-    		else if(strcmp(argv[1], "read") == 0) {
-    			connect_cfg_read();
-    			connect_start();
-    		    return;
-    		}
-    		else if(strcmp(argv[1], "save") == 0) {
-			    printf("ATWS: %s,%d\n", ext_serv.url, ext_serv.port);
-    			if(flash_write_cfg(&ext_serv, 0x5000, strlen(ext_serv.port) + strlen(ext_serv.url)))
-    			    printf("ATWS: saved\n", ext_serv.url, ext_serv.port);
-    		    return;
-    		}
-    	}
-    	else if (argc >= 3 ) {
-    		strcpy((char *)ext_serv.url, (char*)argv[1]);
-        	ext_serv.port = atoi((char*)argv[2]);
-        	printf("ATWS: %s,%d\r\n", ext_serv.url, ext_serv.port);
-        	connect_start();
-        	return;
-    	}
-	}	
-	printf("ATWS: Usage: ATWS=URL,PORT or ATWS=close, ATWS=read, ATWS=save\n");
-}
-
-
-void fATWC(void *arg){
+void fATWC(int argc, char *argv[]){
 	int mode, ret;
 	unsigned long tick1 = xTaskGetTickCount();
 	unsigned long tick2, tick3;
 	char empty_bssid[6] = {0}, assoc_by_bssid = 0;
-	
-	connect_close();
-#if	DEBUG_AT_USER_LEVEL > 1
-	printf("ATWC: Connect to AP...\n");
-#endif
+
+	if(argc > 1) {
+		if(argv[1][0] == '?') {
+			printf("Not released!\n");
+			return;
+		}
+		strcpy((char *)wifi.ssid.val, argv[1]);
+		wifi.ssid.len = strlen((char*)wifi.ssid.val);
+	}
+	if(argc > 2) {
+		strcpy((char *)password, argv[2]);
+		wifi.password = password;
+		wifi.password_len = strlen(password);
+	}
+	if(argc > 3) {
+		if((strlen(argv[3]) != 1 ) || (argv[3][0] <'0' || argv[3][0] >'3')) {
+			printf("%s: Wrong WEP key id. Must be one of 0,1,2, or 3.\n", argv[0]);
+			return;
+		}
+		wifi.key_id = atoi(argv[1]);
+	}
 	if(memcmp (wifi.bssid.octet, empty_bssid, 6))
 		assoc_by_bssid = 1;
 	else if(wifi.ssid.val[0] == 0){
-		printf("ATWC: Error: SSID can't be empty\n");
+		printf("%s: Error: SSID can't be empty\n", argv[0]);
 		ret = RTW_BADARG;
 		goto EXIT;
 	}
@@ -228,6 +132,7 @@ void fATWC(void *arg){
 	else{
 		wifi.security_type = RTW_SECURITY_OPEN;
 	}
+	connect_close();
 	//Check if in AP mode
 	wext_get_mode(WLAN0_NAME, &mode);
 	if(mode == IW_MODE_MASTER) {
@@ -258,27 +163,23 @@ void fATWC(void *arg){
 		goto EXIT;
 	}
 	tick2 = xTaskGetTickCount();
-	printf("Connected after %dms\n", (tick2-tick1));
+	printf("Connected after %d ms\n", (tick2-tick1));
 	/* Start DHCPClient */
 	LwIP_DHCP(0, DHCP_START);
 	tick3 = xTaskGetTickCount();
-	printf("Got IP after %dms\n", (tick3-tick1));
-	printf("\n\r");
-//#if CONFIG_WLAN_CONNECT_CB
+	printf("Got IP after %d ms\n\n", (tick3-tick1));
 	connect_start();
 EXIT:
 	init_wifi_struct( );
 }
 
-void fATWD(void *arg){
+// WIFI Disconnect
+void fATWD(int argc, char *argv[]){
 	int timeout = wifi_test_timeout_ms/wifi_test_timeout_step_ms;;
 	char essid[33];
 	int ret = RTW_SUCCESS;
 
 	connect_close();
-#if	DEBUG_AT_USER_LEVEL > 1
-	printf("ATWD: Disconnect...\n");
-#endif
 	printf("Deassociating AP ...\n");
 	if(wext_get_ssid(WLAN0_NAME, (unsigned char *) essid) < 0) {
 		printf("WIFI disconnected\n");
@@ -311,56 +212,130 @@ exit:
 	return;
 }
 
-// Dump register
-void fATSD(void *arg)
+/*-------------------------------------------------------------------------------------
+ Копирует данные из области align(4) (flash, registers, ...) в область align(1) (ram)
+--------------------------------------------------------------------------------------*/
+extern void copy_align4_to_align1(unsigned char * pd, void * ps, unsigned int len);
+/*
+static void copy_align4_to_align1(unsigned char * pd, void * ps, unsigned int len)
 {
-	int argc = 0;
-	char *argv[MAX_ARGC] = {0};
+	union {
+		unsigned char uc[4];
+		unsigned int ud;
+	}tmp;
+	unsigned int *p = (unsigned int *)((unsigned int)ps & (~3));
+	unsigned int xlen = (unsigned int)ps & 3;
+	//	unsigned int size = len;
 
-#if	DEBUG_AT_USER_LEVEL > 1
-	printf("ATSD: dump registers\n");
-#endif
-	if(!arg){
-		printf("ATSD: Usage: ATSD=REGISTER");
-		return;
+	if(xlen) {
+		tmp.ud = *p++;
+		while (len)  {
+			len--;
+			*pd++ = tmp.uc[xlen++];
+			if(xlen & 4) break;
+		}
 	}
-	argc = parse_param(arg, argv);
-	if(argc == 2 || argc == 3)
-		CmdDumpWord(argc-1, (unsigned char**)(argv+1));
+	xlen = len >> 2;
+	while(xlen) {
+		tmp.ud = *p++;
+		*pd++ = tmp.uc[0];
+		*pd++ = tmp.uc[1];
+		*pd++ = tmp.uc[2];
+		*pd++ = tmp.uc[3];
+		xlen--;
+	}
+	if(len & 3) {
+		tmp.ud = *p;
+		pd[0] = tmp.uc[0];
+		if(len & 2) {
+			pd[1] = tmp.uc[1];
+			if(len & 1) {
+				pd[2] = tmp.uc[2];
+			}
+		}
+	}
+	//	return size;
+}
+*/
+int print_hex_dump(uint8_t *buf, int len, unsigned char k) {
+	uint32_t ss[2];
+	ss[0] = 0x78323025; // "%02x"
+	ss[1] = k;	// ","...'\0'
+	uint8_t * ptr = buf;
+	int result = 0;
+	while (len--) {
+		if (len == 0)
+			ss[1] = 0;
+		result += printf((uint8_t *) &ss, *ptr++);
+	}
+	return result;
 }
 
-void fATSW(void *arg)
+extern char str_rom_hex_addr[]; // in *.ld "[Addr]   .0 .1 .2 .3 .4 .5 .6 .7 .8 .9 .A .B .C .D .E .F\n"
+void dump_bytes(uint32 addr, int size)
 {
-	int argc = 0;
-	char *argv[MAX_ARGC] = {0};
-
-#if	DEBUG_AT_USER_LEVEL > 1
-	printf("ATSW: write register\n");
-#endif
-	if(!arg){
-		printf("ATSW: Usage: ATSW=REGISTER,DATA");
-		return;
+	uint8 buf[17];
+	u32 symbs_line = sizeof(buf)-1;
+	printf(str_rom_hex_addr);
+	while (size) {
+		if (symbs_line > size) symbs_line = size;
+		printf("%08X ", addr);
+		copy_align4_to_align1(buf, addr, symbs_line);
+		print_hex_dump(buf, symbs_line, ' ');
+		int i;
+		for(i = 0 ; i < symbs_line ; i++) {
+			if(buf[i] < 0x20 || buf[i] > 0x7E) {
+				buf[i] = '.';
+			}
+		}
+		buf[symbs_line] = 0;
+		i = (sizeof(buf)-1) - symbs_line;
+		while(i--) printf("   ");
+		printf(" %s\r\n", buf);
+		addr += symbs_line;
+		size -= symbs_line;
 	}
-	argc = parse_param(arg, argv);
-	if(argc == 2 || argc == 3)
-		CmdWriteWord(argc-1, (unsigned char**)(argv+1));
+}
+// Dump byte register
+void fATSB(int argc, char *argv[])
+{
+	int size = 16;
+	uint32 addr = Strtoul(argv[1],0,16);
+	if (argc > 2) {
+		size = Strtoul(argv[2],0,10);
+		if (size <= 0 || size > 16384)
+			size = 16;
+	}
+	dump_bytes(addr, size);
+}
+
+// Dump dword register
+void fATSD(int argc, char *argv[])
+{
+/*
+	if (argc > 2) {
+		int size = Strtoul(argv[2],0,10);
+		if (size <= 0 || size > 16384)
+			argv[2] = "16";
+	}
+*/
+	CmdDumpWord(argc-1, (unsigned char**)(argv+1));
+}
+
+void fATSW(int argc, char *argv[])
+{
+	CmdWriteWord(argc-1, (unsigned char**)(argv+1));
 }
 
 // Close connections
-void fATOF(void *arg)
+void fATOF(int argc, char *argv[])
 {
-#if	DEBUG_AT_USER_LEVEL > 1
-	printf("ATOF: Close connections...\n");
-#endif
 	connect_close();
 }
 
 // Open connections
-void fATON(void *arg)
+void fATON(int argc, char *argv[])
 {
-#if	DEBUG_AT_USER_LEVEL > 1
-	printf("ATON: Open connections...\n");
-#endif
 	connect_start();
 }
 
@@ -451,22 +426,18 @@ void print_tcp_pcb(void)
  * Returns      :
 *******************************************************************************/
 //------------------------------------------------------------------------------
-void fATLW(void *arg) 	// Info Lwip
+void fATLW(int argc, char *argv[]) 	// Info Lwip
 {
-#if	DEBUG_AT_USER_LEVEL > 1
-	printf("ATLW: Lwip pcb Info\n");
-#endif
 	print_udp_pcb();
 	print_tcp_pcb();
 }
 
-void fATDS(void *arg) 	// Deep sleep
+void fATDS(int argc, char *argv[]) 	// Deep sleep
 {
-#if	DEBUG_AT_USER_LEVEL > 1
-	printf("ATDS: Deep sleep\n");
-#endif
-/*
-    // turn off log uart
+	uint32 sleep_ms = 10000;
+	if(argc > 2) sleep_ms = atoi(argv[1]);
+#if 0
+	// turn off log uart
     sys_log_uart_off();
     // initialize wakeup pin at PB_1
     gpio_t gpio_wake;
@@ -476,56 +447,26 @@ void fATDS(void *arg) 	// Deep sleep
 
     // enter deep sleep
     deepsleep_ex(DSLEEP_WAKEUP_BY_GPIO | DSLEEP_WAKEUP_BY_TIMER, 10000); */
-    deepsleep_ex(DSLEEP_WAKEUP_BY_TIMER, 10000);
-
-//	standby_wakeup_event_add(STANDBY_WAKEUP_BY_STIMER, 10000, 0);
-//    deepstandby_ex();
-
-//    sleep_ex(SLEEP_WAKEUP_BY_STIMER, 8000); // sleep_ex can't be put in irq handler
+	//	standby_wakeup_event_add(STANDBY_WAKEUP_BY_STIMER, 10000, 0);
+//  deepstandby_ex();
+//  sleep_ex(SLEEP_WAKEUP_BY_STIMER, 8000); // sleep_ex can't be put in irq handler
 //	release_wakelock(WAKELOCK_OS);
+#else
+    deepsleep_ex(DSLEEP_WAKEUP_BY_TIMER, sleep_ms);
+#endif
 }
 
-
-void print_wlan_help(void *arg){
-		printf("WLAN AT COMMAND SET:\n");
-		printf("==============================\n");
-        printf(" Set MP3 server\n");
-        printf("\t# ATWS=URL,PATH,PORT\n");
-        printf("\tSample:\tATWS=icecast.omroep.nl/3fm-sb-mp3,80\n");
-        printf("\t\tATWS=meuk.spritesserver.nl/Ii.Romanzeandante.mp3,80\n");
-        printf("\t\tATWS=?, ATWS=close, ATWS=save, ATWS=read\n");
-        printf(" Connect to an AES AP\n");
-        printf("\t# ATW0=SSID\n");
-        printf("\t# ATW1=PASSPHRASE\n");
-        printf("\t# ATWC\n");
-        printf(" DisConnect AP\n");
-        printf("\t# ATWD\n");
-}
-
-log_item_t at_user_items[ ] = {
-	{"ATW0", fATW0,},
-	{"ATW1", fATW1,},
-	{"ATW2", fATW2,},
-	{"ATWC", fATWC,},
-	{"ATST", fATST,},
-	{"ATDS", fATDS,},
-	{"ATLW", fATLW,}, 	// Info Lwip
-	{"ATSD", fATSD,},	// Dump register
-	{"ATSW", fATSW,},	// Set register
-	{"ATWD", fATWD,},	//
-	{"ATWS", fATWS,},	// MP3 Set server, Close connect
-	{"ATOF", fATOF,},	// Close connections
-	{"ATON", fATON,},	// Open connections
+MON_RAM_TAB_SECTION COMMAND_TABLE console_commands1[] = {
+		{"ATPN", 1, fATWC, "=<SSID>[,<PASSPHRASE>[,WEPKEY]]: WIFI Connect to AP"},
+		{"ATWD", 0, fATWD, ": WIFI Disconnect"},
+		{"ATST", 0, fATST, ": Memory info"},
+		{"ATLW", 0, fATLW, ": LwIP Info"},
+		{"ATSB", 1, fATSB, "=<ADDRES(hex)>[,COUNT(dec)]: Dump byte register"},
+		{"ATSD", 1, fATSD, "=<ADDRES(hex)>[,COUNT(dec)]: Dump dword register"},
+		{"ATSW", 2, fATSW, "=<ADDRES(hex)>,<DATA(hex)>: Set register"},
+		{"ATDS", 0, fATDS, "=[TIME(ms)]: Deep sleep"},
+		{"ATON", 0, fATON, ": Open connections"},
+		{"ATOF", 0, fATOF, ": Close connections"}
 };
-
-
-void at_user_init(void)
-{
-	init_wifi_struct();
-	connect_cfg_read();
-	log_service_add_table(at_user_items, sizeof(at_user_items)/sizeof(at_user_items[0]));
-}
-
-log_module_init(at_user_init);
 
 #endif //#ifdef CONFIG_AT_USR

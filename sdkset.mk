@@ -84,23 +84,23 @@ DRAM_C =
 SRC_C += sdk/component/soc/realtek/8195a/cmsis/device/system_8195a.c
 
 #console
-#DRAM_C += sdk/component/common/api/at_cmd/atcmd_ethernet.c
-#DRAM_C += sdk/component/common/api/at_cmd/atcmd_lwip.c
-#DRAM_C += sdk/component/common/api/at_cmd/atcmd_sys.c
-#DRAM_C += sdk/component/common/api/at_cmd/atcmd_wifi.c
+DRAM_C += sdk/component/common/api/at_cmd/atcmd_ethernet.c
+DRAM_C += sdk/component/common/api/at_cmd/atcmd_lwip.c
+DRAM_C += sdk/component/common/api/at_cmd/atcmd_sys.c
+DRAM_C += sdk/component/common/api/at_cmd/atcmd_wifi.c
 SRC_C += sdk/component/common/api/at_cmd/log_service.c
 SRC_C += sdk/component/soc/realtek/8195a/misc/driver/low_level_io.c
-SRC_C += sdk/component/soc/realtek/8195a/misc/driver/rtl_consol.c
+#SRC_C += sdk/component/soc/realtek/8195a/misc/driver/rtl_consol.c
 
 #network - api
 SRC_C += sdk/component/common/api/wifi/rtw_wpa_supplicant/wpa_supplicant/wifi_eap_config.c
 SRC_C += sdk/component/common/api/wifi/rtw_wpa_supplicant/wpa_supplicant/wifi_p2p_config.c
 SRC_C += sdk/component/common/api/wifi/rtw_wpa_supplicant/wpa_supplicant/wifi_wps_config.c
-SRC_C += sdk/component/common/api/wifi/wifi_conf.c
-SRC_C += sdk/component/common/api/wifi/wifi_ind.c
+#SRC_C += sdk/component/common/api/wifi/wifi_conf.c
+#SRC_C += sdk/component/common/api/wifi/wifi_ind.c
+#SRC_C += sdk/component/common/api/wifi/wifi_util.c
 SRC_C += sdk/component/common/api/wifi/wifi_promisc.c
 SRC_C += sdk/component/common/api/wifi/wifi_simple_config.c
-SRC_C += sdk/component/common/api/wifi/wifi_util.c
 SRC_C += sdk/component/common/api/lwip_netconf.c
 
 #network - app
@@ -369,7 +369,7 @@ ADD_SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/flash_eep.c
 #ADD_SRC_C += sdk/component/common/example/mdns/example_mdns.c
 #ADD_SRC_C += sdk/component/common/example/socket_select/example_socket_select.c
 #ADD_SRC_C += sdk/component/common/example/uart_atcmd/example_uart_atcmd.c
-ADD_SRC_C += sdk/component/common/example/wlan_fast_connect/example_wlan_fast_connect.c
+#ADD_SRC_C += sdk/component/common/example/wlan_fast_connect/example_wlan_fast_connect.c
 #ADD_SRC_C += sdk/component/common/example/xml/example_xml.c
 #ADD_SRC_C += sdk/component/common/example/example_entry.c
 #ADD_SRC_C += sdk/component/common/drivers/sdio/realtek/sdio_host/src/sd.c 
@@ -394,15 +394,19 @@ ADD_SRC_C += sdk/component/common/example/wlan_fast_connect/example_wlan_fast_co
 ADD_SRC_C += project/src/FreeRTOS-openocd.c
 #user main
 ADD_SRC_C += project/src/user/main.c
-ADD_SRC_C += project/src/user/wc_mgr.c
+ADD_SRC_C += project/src/driver/wifi_api.c
+ADD_SRC_C += project/src/driver/console_api.c
+ADD_SRC_C += project/src/driver/wifi/wifi_conf.c
+ADD_SRC_C += project/src/driver/wifi/wifi_ind.c
+ADD_SRC_C += project/src/driver/wifi/wifi_util.c
+ADD_SRC_C += project/src/user/atcmd_user.c
+#ADD_SRC_C += project/src/user/wc_mgr.c
 ADD_SRC_C += project/src/user/http_server.c
 ADD_SRC_C += project/src/user/cgi-test.c
 INCLUDES += project/inc/user
 
 # components
 include librtlhttpd/librtlhttpd.mk
-
-
 
 #=============================================
 #=============================================

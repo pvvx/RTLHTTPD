@@ -18,6 +18,7 @@
 #include <wifi/wifi_conf.h>
 #include <wifi/wifi_util.h>
 #endif
+
 #include "lwip_netconf.h"
 #include <platform/platform_stdlib.h>
 #include <dhcp/dhcps.h>
@@ -28,7 +29,7 @@
 #include "wc_mgr.h"
 #include "http_server.h"
 
-rtw_mode_t wifi_mode = RTW_MODE_STA_AP; //RTW_MODE__NONE;
+//rtw_mode_t wifi_mode = RTW_MODE_STA_AP; //RTW_MODE__NONE;
 
 
 #ifndef WLAN0_NAME
@@ -50,7 +51,7 @@ extern struct netif xnetif[NET_IF_NUM];
 typedef int (*wlan_init_done_ptr)(void);
 typedef int (*write_reconnect_ptr)(uint8_t *data, uint32_t len);
 extern init_done_ptr p_wlan_init_done_callback;
-extern write_reconnect_ptr p_write_reconnect_ptr;
+//extern write_reconnect_ptr p_write_reconnect_ptr;
 
 static rtw_ap_info_t ap = {0};
 
@@ -161,7 +162,7 @@ void wc_start(void) {
 
 	p_wlan_init_done_callback = NULL;
 	// Call back from application layer after wifi_connection success
-	p_write_reconnect_ptr = NULL; //wlan_reconnect;
+//	p_write_reconnect_ptr = NULL; //wlan_reconnect;
 
 	LwIP_Init();
 
@@ -258,7 +259,7 @@ void wc_start(void) {
 
 
 
-	exit_fail:
+exit_fail:
 	vTaskDelete(NULL);
 }
 

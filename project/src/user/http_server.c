@@ -101,7 +101,7 @@ static void websocketBcast(void *arg) {
 	static int ctr=0;
 	char buff[128];
 
-	DiagPrintf("RAM heap\t%d bytes\tTCM heap\t%d bytes\n",
+	debug_printf("RAM heap\t%d bytes\tTCM heap\t%d bytes\n",
 			xPortGetFreeHeapSize(), tcm_heap_freeSpace());
 	while(1) {
 		ctr++;
@@ -130,13 +130,13 @@ static void myWebsocketConnect(Websock *ws) {
 
 //On reception of a message, echo it back verbatim
 void myEchoWebsocketRecv(Websock *ws, char *data, int len, int flags) {
-	DiagPrintf("EchoWs: echo, len=%d\n", len);
+	info_printf("EchoWs: echo, len=%d\n", len);
 	cgiWebsocketSend(ws, data, len, flags);
 }
 
 //Echo websocket connected. Install reception handler.
 void myEchoWebsocketConnect(Websock *ws) {
-	DiagPrintf("EchoWs: connect\n");
+	info_printf("EchoWs: connect\n");
 	ws->recvCb=myEchoWebsocketRecv;
 }
 
@@ -172,7 +172,7 @@ HttpdBuiltInUrl builtInUrls[]=
 
 void httpd_start(void)
 {
-	rtl_printf("GPIO init\n");
+	info_printf("GPIO init\n");
 	//HalPinCtrlRtl8195A(UART2,0,0);  // uart2 and pa_4 share the same pin
 	// Init LED control pin
 	gpio_init(&gpio_led, GPIO_LED_PIN);
@@ -185,19 +185,19 @@ void httpd_start(void)
 	captdnsInit();
 	vTaskDelay(100);
 
-	rtl_printf("[Before espfsInit]: RAM heap\t%d bytes\tTCM heap\t%d bytes\n",
+	debug_printf("[Before espfsInit]: RAM heap\t%d bytes\tTCM heap\t%d bytes\n",
 			xPortGetFreeHeapSize(), tcm_heap_freeSpace());
 	e=espFsInit((void*)FLASH_APP_BASE);
 
-	rtl_printf("[After espfsInit]: RAM heap\t%d bytes\tTCM heap\t%d bytes\n",
+	debug_printf("[After espfsInit]: RAM heap\t%d bytes\tTCM heap\t%d bytes\n",
 			xPortGetFreeHeapSize(), tcm_heap_freeSpace());
 	httpdInit(builtInUrls, 80);
 
 	if (e==0)
 		xTaskCreate(websocketBcast, "wsbcast", 300, NULL, 3, NULL);
 	else
-		rtl_printf("Espfs not found.\n");
+		error_printf("Espfs not found.\n");
 
-	rtl_printf("[After httpdInit]: RAM heap\t%d bytes\tTCM heap\t%d bytes\n",
+	debug_printf("[After httpdInit]: RAM heap\t%d bytes\tTCM heap\t%d bytes\n",
 			xPortGetFreeHeapSize(), tcm_heap_freeSpace());
 }
