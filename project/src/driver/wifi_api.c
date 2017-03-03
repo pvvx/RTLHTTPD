@@ -28,7 +28,7 @@
 
 //=========================================
 //==== Wlan Config ========================
-#define DEF_WIFI_MODE 		RTW_MODE_STA_AP
+#define DEF_WIFI_MODE 		RTW_MODE_STA_AP // RTW_MODE_STA_AP
 #define DEF_WIFI_COUNTRY	RTW_COUNTRY_RU
 #define DEF_WIFI_TX_PWR		RTW_TX_PWR_PERCENTAGE_100
 #define DEF_WIFI_BGN		RTW_NETWORK_BGN		// rtw_network_mode_t

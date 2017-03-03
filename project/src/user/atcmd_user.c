@@ -68,15 +68,15 @@ static void init_wifi_struct(void)
 
 // Mem info
 void fATST(void){
-	extern u8 __HeapLimit, __StackTop;
-	extern struct Heap g_tcm_heap;
 		printf("\nCLK CPU\t\t%d Hz\nRAM heap\t%d bytes\nTCM heap\t%d bytes\n",
 				HalGetCpuClk(), xPortGetFreeHeapSize(), tcm_heap_freeSpace());
-		dump_mem_block_list();
+#if CONFIG_DEBUG_LOG > 1
 		u32 saved = ConfigDebugInfo;
-		DBG_INFO_MSG_ON(_DBG_TCM_HEAP_); // On Debug TCM MEM
+		DBG_INFO_MSG_ON(_DBG_TCM_HEAP_ | _DBG_RAM_HEAP_); // On Debug HEAPs
+		dump_mem_block_list();
 		tcm_heap_dump();
 		ConfigDebugInfo = saved;
+#endif;
 		printf("\n");
 #if (configGENERATE_RUN_TIME_STATS == 1)
 		char *cBuffer = pvPortMalloc(512);
@@ -331,12 +331,14 @@ void fATSW(int argc, char *argv[])
 void fATOF(int argc, char *argv[])
 {
 	connect_close();
+	wifi_off();
 }
 
 // Open connections
 void fATON(int argc, char *argv[])
 {
-	connect_start();
+	wifi_off();
+//	connect_start();
 }
 
 /* Get one byte from the 4-byte address */

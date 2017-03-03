@@ -65,6 +65,7 @@ void main(void)
 		SystemCoreClockUpdate();
 		En32KCalibration();
 	}
+	vPortFree(pvPortMalloc(4)); // Init RAM heap
 
 #ifdef CONFIG_WDG_ON_IDLE
 	HAL_PERI_ON_WRITE32(REG_SOC_FUNC_EN, HAL_PERI_ON_READ32(REG_SOC_FUNC_EN) & 0x1FFFFF);
@@ -79,7 +80,6 @@ void main(void)
 #endif
 
 #if DEBUG_MAIN_LEVEL > 1
-	vPortFree(pvPortMalloc(4)); // Init RAM heap
 	fATST(); // RAM/TCM/Heaps info
 #endif
 
