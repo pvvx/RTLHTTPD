@@ -5,6 +5,10 @@
 
 #define RTL8710AF
 //#define RTL8711AM
+/* Image1 on project */
+#define PRESENT_IMAGE1
+/* Image2 on project */
+#define PRESENT_IMAGE2
 /*
  * Target Platform Selection
  */
@@ -190,7 +194,7 @@
 =3 errors + warning + info,
 =4 errors + warning + info + debug,
 =5 full */
-#define CONFIG_DEBUG_LOG 5
+#define CONFIG_DEBUG_LOG 2
 #if CONFIG_DEBUG_LOG > 0
 //#define CONFIG_DEBUG_ERR_MSG 1
 #define CONFIG_DEBUG_LOG_ADC_HAL 1

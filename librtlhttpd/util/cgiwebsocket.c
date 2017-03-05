@@ -20,6 +20,7 @@ Websocket support for esphttpd. Inspired by https://github.com/dangrie158/ESP-82
 #include "hal_crypto.h"
 #include "polarssl/base64.h"
 #include "cgiwebsocket.h"
+#include "platform.h"
 
 #define WS_KEY_IDENTIFIER "Sec-WebSocket-Key: "
 #define WS_GUID "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"

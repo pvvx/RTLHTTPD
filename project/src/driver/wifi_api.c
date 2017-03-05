@@ -138,8 +138,7 @@ WIFI_CONFIG wifi_cfg = {
 		.country_code = DEF_WIFI_COUNTRY,// rtw_country_code_t
 		.tx_pwr = DEF_WIFI_TX_PWR,	// rtw_tx_pwr_percentage_t
 		.bgn = DEF_WIFI_BGN,		// rtw_network_mode_t
-		.flg = 0
-};
+		.flg = 0 };
 //---- Interface 0 - wlan0 - AP - init ---
 SOFTAP_CONFIG wifi_ap_cfg = {
 		.ssid = DEF_AP_SSID,
@@ -162,7 +161,7 @@ STATION_CONFIG wifi_st_cfg = {
 		.bssid = DEF_ST_BSSID,
 		.security_type = DEF_ST_SECURITY,
 		.autoreconnect = DEF_ST_AUTORECONNECT,
-		.reconnect_pause = DEF_ST_RECONNECT_PAUSE
+		.reconnect_pause =	DEF_ST_RECONNECT_PAUSE
 };
 DHCP_CONFIG wifi_st_dhcp = {
 		.ip = DEF_ST_IP,
@@ -170,43 +169,46 @@ DHCP_CONFIG wifi_st_dhcp = {
 		.gw = DEF_ST_GW,
 		.mode = 3
 };
+
+rtw_mode_t wifi_cur_mode = RTW_MODE_NONE;
+
 /*
-void wifi_start(void) {
-	if (flash_read_cfg(NULL, FEEP_ID_WIFI_CFG, sizeof(WIFI_CONFIG))
-			== sizeof(WIFI_CONFIG)) {
-		flash_read_cfg(&wifi_cfg, FEEP_ID_WIFI_CFG, sizeof(WIFI_CONFIG));
-	}
-	if (wifi_cfg.mode >= RTW_MODE_MAX)
-		wifi_cfg.mode = DEF_WIFI_MODE;
-	if (wifi_cfg.mode <= RTW_MODE_STA_AP) {
-		if (wifi_cfg.mode & RTW_MODE_AP) {
-			if (flash_read_cfg(&wifi_cfg, FEEP_ID_WIFI_AP_CFG,
-					sizeof(SOFTAP_CONFIG)) != sizeof(SOFTAP_CONFIG)) {
-				wifi_cfg.mode &= (~RTW_MODE_AP);
-				wifi_ap_cfg = NULL;
-			}
-		}
-		if (wifi_cfg.mode & RTW_MODE_STA) {
-			if (flash_read_cfg(&wifi_cfg, FEEP_ID_WIFI_ST_CFG,
-					sizeof(STATION_CONFIG)) != sizeof(STATION_CONFIG)) {
-				wifi_cfg.mode &= (~RTW_MODE_STA);
-				wifi_st_cfg = NULL;
-			}
-		}
-	}
-	// Call back from wlan driver after wlan init done
-	p_wlan_init_done_callback = wlan_init_done_callback;
+ void wifi_start(void) {
+ if (flash_read_cfg(NULL, FEEP_ID_WIFI_CFG, sizeof(WIFI_CONFIG))
+ == sizeof(WIFI_CONFIG)) {
+ flash_read_cfg(&wifi_cfg, FEEP_ID_WIFI_CFG, sizeof(WIFI_CONFIG));
+ }
+ if (wifi_cfg.mode >= RTW_MODE_MAX)
+ wifi_cfg.mode = DEF_WIFI_MODE;
+ if (wifi_cfg.mode <= RTW_MODE_STA_AP) {
+ if (wifi_cfg.mode & RTW_MODE_AP) {
+ if (flash_read_cfg(&wifi_cfg, FEEP_ID_WIFI_AP_CFG,
+ sizeof(SOFTAP_CONFIG)) != sizeof(SOFTAP_CONFIG)) {
+ wifi_cfg.mode &= (~RTW_MODE_AP);
+ wifi_ap_cfg = NULL;
+ }
+ }
+ if (wifi_cfg.mode & RTW_MODE_STA) {
+ if (flash_read_cfg(&wifi_cfg, FEEP_ID_WIFI_ST_CFG,
+ sizeof(STATION_CONFIG)) != sizeof(STATION_CONFIG)) {
+ wifi_cfg.mode &= (~RTW_MODE_STA);
+ wifi_st_cfg = NULL;
+ }
+ }
+ }
+ // Call back from wlan driver after wlan init done
+ p_wlan_init_done_callback = wlan_init_done_callback;
 
-	// Call back from application layer after wifi_connection success
-	p_write_reconnect_ptr = wlan_write_reconnect_data_to_flash;
+ // Call back from application layer after wifi_connection success
+ p_write_reconnect_ptr = wlan_write_reconnect_data_to_flash;
 
-	wifi_on(wifi_cfg.mode);
-	if (wifi_cfg.mode <= RTW_MODE_STA_AP && (wifi_cfg.mode & RTW_MODE_STA)) {
-		if (wifi_st_cfg->autoconnect)
-			wifi_set_autoreconnect(wifi_st_cfg->autoconnect);
-	}
-}
-*/
+ wifi_on(wifi_cfg.mode);
+ if (wifi_cfg.mode <= RTW_MODE_STA_AP && (wifi_cfg.mode & RTW_MODE_STA)) {
+ if (wifi_st_cfg->autoconnect)
+ wifi_set_autoreconnect(wifi_st_cfg->autoconnect);
+ }
+ }
+ */
 typedef int (*wlan_init_done_ptr)(void);
 typedef int (*write_reconnect_ptr)(uint8_t *data, uint32_t len);
 //Function
@@ -218,8 +220,7 @@ extern wlan_init_done_ptr p_wlan_init_done_callback;
 extern write_reconnect_ptr p_write_reconnect_ptr;
 extern struct netif xnetif[NET_IF_NUM];
 
-int wlan_init_done_callback(void)
-{
+int wlan_init_done_callback(void) {
 //	wifi_disable_powersave();
 #if CONFIG_AUTO_RECONNECT
 //	wifi_set_autoreconnect(1); // (not work if lib_wlan_mp.a ?)
@@ -228,30 +229,34 @@ int wlan_init_done_callback(void)
 	return 0;
 }
 
-rtw_result_t wifi_run_ap(void)
-{
+rtw_result_t wifi_run_ap(void) {
 	rtw_result_t ret = RTW_NOTAP;
-	if(wifi_cfg.mode & RTW_MODE_AP) {
+	if (wifi_cfg.mode & RTW_MODE_AP) {
+		wifi_cur_mode &= ~RTW_MODE_AP;
 		LwIP_DHCP(1, DHCP_STOP);
 		info_printf("Starting AP ...\n");
-		ret = wifi_start_ap(
-				wifi_ap_cfg.ssid,			//char  *ssid,
+		ret = wifi_start_ap(wifi_ap_cfg.ssid,			//char  *ssid,
 				wifi_ap_cfg.security_type,	//rtw_security_t ecurity_type,
 				wifi_ap_cfg.password, 		//char *password,
 				strlen(wifi_ap_cfg.ssid),			//int ssid_len,
 				strlen(wifi_ap_cfg.password), 	//int password_len,
 				wifi_ap_cfg.channel);			//int channel
-		if(ret != RTW_SUCCESS) {
+		if (ret != RTW_SUCCESS) {
 			error_printf("Start AP failed!\n\n");;
 		} else {
-			int timeout = 10000/200;
-			while(1) {
+			int timeout = 10000 / 200;
+			while (1) {
 				char essid[33];
-				if(wext_get_ssid(WLAN1_NAME, (unsigned char *) essid) > 0) {
-					if(strcmp((const char *) essid, (const char *)wifi_ap_cfg.ssid) == 0) {
-						info_printf("AP '%s' started after %d ms\n", wifi_ap_cfg.ssid, xTaskGetTickCount());
+				if (wext_get_ssid(WLAN1_NAME, (unsigned char *) essid) > 0) {
+					if (strcmp((const char * ) essid,
+							(const char * )wifi_ap_cfg.ssid)
+							== 0) {
+						info_printf("AP '%s' started after %d ms\n",
+								wifi_ap_cfg.ssid, xTaskGetTickCount());
 #if CONFIG_LWIP_LAYER
-						netif_set_addr(&xnetif[1], &wifi_ap_dhcp.ip , &wifi_ap_dhcp.mask, &wifi_ap_dhcp.gw);
+						netif_set_addr(&xnetif[1], &wifi_ap_dhcp.ip,
+								&wifi_ap_dhcp.mask, &wifi_ap_dhcp.gw);
+						wifi_cur_mode |= RTW_MODE_AP;
 #ifdef CONFIG_DONT_CARE_TP
 						pnetiff->flags |= NETIF_FLAG_IPSWITCH;
 #endif
@@ -261,66 +266,64 @@ rtw_result_t wifi_run_ap(void)
 						break;
 					}
 				}
-				if(timeout == 0) {
+				if (timeout == 0) {
 					error_printf("Start AP timeout!\n");
 					ret = RTW_TIMEOUT;
 					break;
 				}
-				vTaskDelay(200/portTICK_RATE_MS);
-				timeout --;
+				vTaskDelay(200 / portTICK_RATE_MS);
+				timeout--;
 			}
 		}
 	}
 	return ret;
 }
 
-rtw_result_t wifi_run_st(void)
-{
+rtw_result_t wifi_run_st(void) {
 	rtw_result_t ret = RTW_NOTSTA;
-	if(wifi_cfg.mode & RTW_MODE_STA) {
+	if (wifi_cfg.mode & RTW_MODE_STA) {
+		wifi_cur_mode &= ~RTW_MODE_STA;
 #if CONFIG_AUTO_RECONNECT
 		p_wlan_autoreconnect_hdl = NULL;
 #endif
 		LwIP_DHCP(0, DHCP_STOP);
 #if CONFIG_AUTO_RECONNECT
-		if(wifi_st_cfg.autoreconnect) {
-			ret = wifi_config_autoreconnect(1, wifi_st_cfg.autoreconnect, wifi_st_cfg.reconnect_pause);
-			if(ret != RTW_SUCCESS)
+		if (wifi_st_cfg.autoreconnect) {
+			ret = wifi_config_autoreconnect(1, wifi_st_cfg.autoreconnect,
+					wifi_st_cfg.reconnect_pause);
+			if (ret != RTW_SUCCESS)
 				warning_printf("ERROR: Operation failed! Error=%d\n", ret);
 		}
 #endif
 		info_printf("Connected to AP\n");
-		ret = wifi_connect(wifi_st_cfg.ssid,
-				wifi_st_cfg.security_type,
-				wifi_st_cfg.password,
-				strlen(wifi_st_cfg.ssid),
-				strlen(wifi_st_cfg.password),
-				-1,	NULL);
-		if(ret != RTW_SUCCESS) {
+		ret = wifi_connect(wifi_st_cfg.ssid, wifi_st_cfg.security_type,
+				wifi_st_cfg.password, strlen(wifi_st_cfg.ssid),
+				strlen(wifi_st_cfg.password), -1, NULL);
+		if (ret != RTW_SUCCESS) {
 			error_printf("ERROR: Operation failed! Error=%d\n", ret);
 		} else {
+			wifi_cur_mode |= RTW_MODE_STA;
 			// Start DHCPClient
 			LwIP_DHCP(0, DHCP_START);
 			info_printf("Got IP\n");
-	#if CONFIG_WLAN_CONNECT_CB
+#if CONFIG_WLAN_CONNECT_CB
 			//	extern void connect_start(void);
 			connect_start();
-	#endif
+#endif
 		}
 	};
 	return ret;
 }
 
-void wifi_init_thrd(void)
-{
-	/* Initilaize the LwIP stack */
-	debug_printf("\nLwIP Init\n");
-	LwIP_Init();
-	if(wifi_cfg.mode != RTW_MODE_NONE) {
-		dhcps_deinit(); // stop dhcp server and client
-#if CONFIG_WIFI_IND_USE_THREAD
-		wifi_manager_init();
-#endif
+int wifi_run(void) {
+	int ret = 0;
+	if (wifi_cfg.mode != RTW_MODE_NONE) {
+		if(wifi_cur_mode) {
+			wifi_off();
+			wifi_cur_mode = RTW_MODE_NONE;
+			debug_printf("dhcps_deinit()\n");
+			dhcps_deinit(); // stop dhcp server and client
+		}
 		// Call back from wlan driver after wlan init done
 		p_wlan_init_done_callback = wlan_init_done_callback;
 		// Call back from application layer after wifi_connection success
@@ -329,20 +332,35 @@ void wifi_init_thrd(void)
 		//		wifi_on(RTW_MODE_STA_AP); // RTW_MODE_STA); // RTW_MODE_STA_AP);
 		if (wifi_on(wifi_cfg.mode) < 0) {
 			error_printf("ERROR: Wifi on failed!\n");
-			goto exit_fail;
 		}
-		wifi_run_ap();
-		wifi_run_st();
-		//	wifi_config_autoreconnect(1,1,1);
-#if CONFIG_INTERACTIVE_MODE
-		/* Initial uart rx swmaphore*/
-		vSemaphoreCreateBinary(uart_rx_interrupt_sema);
-		xSemaphoreTake(uart_rx_interrupt_sema, 1/portTICK_RATE_MS);
-		start_interactive_mode();
-#endif
-		httpd_start();
+		else {
+			wifi_run_ap();
+			wifi_run_st();
+			//	wifi_config_autoreconnect(1,1,1);
+	#if CONFIG_INTERACTIVE_MODE
+			/* Initial uart rx swmaphore*/
+			vSemaphoreCreateBinary(uart_rx_interrupt_sema);
+			xSemaphoreTake(uart_rx_interrupt_sema, 1/portTICK_RATE_MS);
+			start_interactive_mode();
+	#endif
+			ret = 1;
+		}
 	}
-exit_fail:
+	return ret;
+}
+
+void wifi_init_thrd(void) {
+	if (wifi_cfg.mode != RTW_MODE_NONE) {
+		/* Initilaize the LwIP stack */
+		debug_printf("\nLwIP Init\n");
+		LwIP_Init();
+#if CONFIG_WIFI_IND_USE_THREAD
+//	rtw_wifi_manager_deinit();
+		wifi_manager_init();
+#endif
+		if(wifi_run())
+			httpd_start();
+	}
 	/* Initilaize the console stack */
 	console_init();
 	/* Kill init thread after all init tasks done */

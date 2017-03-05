@@ -53,6 +53,7 @@
 /**
  * For Wlan configurations
  */
+
 #define CONFIG_WLAN			1
 #if CONFIG_WLAN
 #define CONFIG_LWIP_LAYER	1
@@ -74,8 +75,8 @@
 #define CONFIG_TRANSPORT	0	//on or off the at command for transport socket
 
 /* For WPS and P2P */
-#define CONFIG_ENABLE_WPS		1
-#define CONFIG_ENABLE_P2P		1
+#define CONFIG_ENABLE_WPS		0
+#define CONFIG_ENABLE_P2P		0
 #if CONFIG_ENABLE_P2P
 #define CONFIG_ENABLE_WPS_AP		1
 #undef CONFIG_WIFI_IND_USE_THREAD

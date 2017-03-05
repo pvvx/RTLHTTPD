@@ -38,7 +38,21 @@
 #endif
 
 extern void wifi_init_thrd();
+extern void rtl_libc_init(void);
 
+void __low_level_init(void)
+{
+	rtl_libc_init();
+}
+
+/* RAM/TCM/Heaps info */
+void ShowMemInfo(void)
+{
+	printf("\nCLK CPU\t\t%d Hz\nRAM heap\t%d bytes\nTCM heap\t%d bytes\n",
+			HalGetCpuClk(), xPortGetFreeHeapSize(), tcm_heap_freeSpace());
+}
+
+/* main */
 void main(void)
 {
 #if DEBUG_MAIN_LEVEL > 3
@@ -49,23 +63,6 @@ void main(void)
 	 CfgSysDebugInfo = -1;
 	 CfgSysDebugWarn = -1;
 #endif
-	 if(HalGetCpuClk() != PLATFORM_CLOCK) {
-#if	CPU_CLOCK_SEL_DIV5_3
-		// 6 - 200000000 Hz, 7 - 10000000 Hz, 8 - 50000000 Hz, 9 - 25000000 Hz, 10 - 12500000 Hz, 11 - 4000000 Hz
-		HalCpuClkConfig(CPU_CLOCK_SEL_VALUE);
-		*((int *)(SYSTEM_CTRL_BASE+REG_SYS_SYSPLL_CTRL1)) |= (1<<17); // REG_SYS_SYSPLL_CTRL1 |= BIT_SYS_SYSPLL_DIV5_3
-#else
-		// 0 - 166666666 Hz, 1 - 83333333 Hz, 2 - 41666666 Hz, 3 - 20833333 Hz, 4 - 10416666 Hz, 5 - 4000000 Hz
-		*((int *)(SYSTEM_CTRL_BASE+REG_SYS_SYSPLL_CTRL1)) &= ~(1<<17); // REG_SYS_SYSPLL_CTRL1 &= ~BIT_SYS_SYSPLL_DIV5_3
-		HalCpuClkConfig(CPU_CLOCK_SEL_VALUE);
-#endif
-		HAL_LOG_UART_ADAPTER pUartAdapter;
-		pUartAdapter.BaudRate = UART_BAUD_RATE_38400;
-		HalLogUartSetBaudRate(&pUartAdapter);
-		SystemCoreClockUpdate();
-		En32KCalibration();
-	}
-	vPortFree(pvPortMalloc(4)); // Init RAM heap
 
 #ifdef CONFIG_WDG_ON_IDLE
 	HAL_PERI_ON_WRITE32(REG_SOC_FUNC_EN, HAL_PERI_ON_READ32(REG_SOC_FUNC_EN) & 0x1FFFFF);
@@ -80,7 +77,8 @@ void main(void)
 #endif
 
 #if DEBUG_MAIN_LEVEL > 1
-	fATST(); // RAM/TCM/Heaps info
+	vPortFree(pvPortMalloc(4)); // Init RAM heap
+	ShowMemInfo(); // RAM/TCM/Heaps info
 #endif
 
 	/* wlan intialization */

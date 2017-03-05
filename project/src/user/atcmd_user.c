@@ -19,22 +19,13 @@
 
 #include "lwip/tcp_impl.h"
 
-rtw_mode_t wifi_mode = RTW_MODE_STA;
+extern void wifi_run(void);
+
+#define printf rtl_printf // DiagPrintf
 
 /* fastconnect use wifi AT command. Not init_wifi_struct when log service disabled
  * static initialize all values for using fastconnect when log service disabled
  */
-static rtw_network_info_t wifi = {
-	{0},    // ssid
-	{0},    // bssid
-	0,      // security
-	NULL,   // password
-	0,      // password len
-	-1      // key id
-};
-
-static rtw_ap_info_t ap = {0};
-static unsigned char password[65] = {0};
 
 _WEAK void connect_start(void)
 {
@@ -50,32 +41,21 @@ _WEAK void connect_close(void)
 #endif
 }
 
-static void init_wifi_struct(void)
+/* RAM/TCM/Heaps info */
+extern void ShowMemInfo(void);
+/*
+void ShowMemInfo(void)
 {
-	memset(wifi.ssid.val, 0, sizeof(wifi.ssid.val));
-	memset(wifi.bssid.octet, 0, ETH_ALEN);	
-	memset(password, 0, sizeof(password));
-	wifi.ssid.len = 0;
-	wifi.password = NULL;
-	wifi.password_len = 0;
-	wifi.key_id = -1;
-	memset(ap.ssid.val, 0, sizeof(ap.ssid.val));
-	ap.ssid.len = 0;
-	ap.password = NULL;
-	ap.password_len = 0;
-	ap.channel = 1;
+	printf("\nCLK CPU\t\t%d Hz\nRAM heap\t%d bytes\nTCM heap\t%d bytes\n",
+			HalGetCpuClk(), xPortGetFreeHeapSize(), tcm_heap_freeSpace());
 }
-
+ */
 // Mem info
-void fATST(void){
-		printf("\nCLK CPU\t\t%d Hz\nRAM heap\t%d bytes\nTCM heap\t%d bytes\n",
-				HalGetCpuClk(), xPortGetFreeHeapSize(), tcm_heap_freeSpace());
-#if CONFIG_DEBUG_LOG > 1
-		u32 saved = ConfigDebugInfo;
-		DBG_INFO_MSG_ON(_DBG_TCM_HEAP_ | _DBG_RAM_HEAP_); // On Debug HEAPs
+void fATST(int argc, char *argv[]) {
+		ShowMemInfo();
+#if 0 //CONFIG_DEBUG_LOG > 1
 		dump_mem_block_list();
 		tcm_heap_dump();
-		ConfigDebugInfo = saved;
 #endif;
 		printf("\n");
 #if (configGENERATE_RUN_TIME_STATS == 1)
@@ -86,130 +66,25 @@ void fATST(void){
 		}
 		vPortFree(cBuffer);
 #endif
+#if defined(configUSE_TRACE_FACILITY) && (configUSE_TRACE_FACILITY == 1) && (configUSE_STATS_FORMATTING_FUNCTIONS == 1)
+	{
+		char * pcWriteBuffer = malloc(1024);
+		if(pcWriteBuffer) {
+			vTaskList((char*)pcWriteBuffer);
+			printf("\nTask List:\n");
+	        printf("==============================\n");
+	        printf("Name\t  Status Priority HighWaterMark TaskNumber\n%s\n", pcWriteBuffer);
+			free(pcWriteBuffer);
+		}
+	}
+#endif
 }
 
 void fATWC(int argc, char *argv[]){
-	int mode, ret;
-	unsigned long tick1 = xTaskGetTickCount();
-	unsigned long tick2, tick3;
-	char empty_bssid[6] = {0}, assoc_by_bssid = 0;
-
-	if(argc > 1) {
-		if(argv[1][0] == '?') {
-			printf("Not released!\n");
-			return;
-		}
-		strcpy((char *)wifi.ssid.val, argv[1]);
-		wifi.ssid.len = strlen((char*)wifi.ssid.val);
-	}
-	if(argc > 2) {
-		strcpy((char *)password, argv[2]);
-		wifi.password = password;
-		wifi.password_len = strlen(password);
-	}
-	if(argc > 3) {
-		if((strlen(argv[3]) != 1 ) || (argv[3][0] <'0' || argv[3][0] >'3')) {
-			printf("%s: Wrong WEP key id. Must be one of 0,1,2, or 3.\n", argv[0]);
-			return;
-		}
-		wifi.key_id = atoi(argv[1]);
-	}
-	if(memcmp (wifi.bssid.octet, empty_bssid, 6))
-		assoc_by_bssid = 1;
-	else if(wifi.ssid.val[0] == 0){
-		printf("%s: Error: SSID can't be empty\n", argv[0]);
-		ret = RTW_BADARG;
-		goto EXIT;
-	}
-	if(wifi.password != NULL){
-		if((wifi.key_id >= 0)&&(wifi.key_id <= 3)) {
-			wifi.security_type = RTW_SECURITY_WEP_PSK;
-		}
-		else{
-			wifi.security_type = RTW_SECURITY_WPA2_AES_PSK;
-		}
-	}
-	else{
-		wifi.security_type = RTW_SECURITY_OPEN;
-	}
-	connect_close();
-	//Check if in AP mode
-	wext_get_mode(WLAN0_NAME, &mode);
-	if(mode == IW_MODE_MASTER) {
-		dhcps_deinit();
-		wifi_off();
-		vTaskDelay(wifi_test_timeout_step_ms/portTICK_RATE_MS);
-		if (wifi_on(RTW_MODE_STA) < 0){
-			printf("ERROR: Wifi on failed!\n");
-                        ret = RTW_ERROR;
-			goto EXIT;
-		}
-	}
-
-	///wifi_set_channel(1);
-
-	if(assoc_by_bssid){
-		printf("Joining BSS by BSSID "MAC_FMT" ...\n", MAC_ARG(wifi.bssid.octet));
-		ret = wifi_connect_bssid(wifi.bssid.octet, (char*)wifi.ssid.val, wifi.security_type, (char*)wifi.password, 
-						ETH_ALEN, wifi.ssid.len, wifi.password_len, wifi.key_id, NULL);		
-	} else {
-		printf("Joining BSS by SSID %s...\n", (char*)wifi.ssid.val);
-		ret = wifi_connect((char*)wifi.ssid.val, wifi.security_type, (char*)wifi.password, wifi.ssid.len,
-						wifi.password_len, wifi.key_id, NULL);
-	}
-	
-	if(ret!= RTW_SUCCESS){
-		printf("ERROR: Can't connect to AP\n");
-		goto EXIT;
-	}
-	tick2 = xTaskGetTickCount();
-	printf("Connected after %d ms\n", (tick2-tick1));
-	/* Start DHCPClient */
-	LwIP_DHCP(0, DHCP_START);
-	tick3 = xTaskGetTickCount();
-	printf("Got IP after %d ms\n\n", (tick3-tick1));
-	connect_start();
-EXIT:
-	init_wifi_struct( );
 }
 
 // WIFI Disconnect
 void fATWD(int argc, char *argv[]){
-	int timeout = wifi_test_timeout_ms/wifi_test_timeout_step_ms;;
-	char essid[33];
-	int ret = RTW_SUCCESS;
-
-	connect_close();
-	printf("Deassociating AP ...\n");
-	if(wext_get_ssid(WLAN0_NAME, (unsigned char *) essid) < 0) {
-		printf("WIFI disconnected\n");
-		goto exit;
-	}
-
-	if((ret = wifi_disconnect()) < 0) {
-		printf("ERROR: Operation failed!\n");
-		goto exit;
-	}
-
-	while(1) {
-		if(wext_get_ssid(WLAN0_NAME, (unsigned char *) essid) < 0) {
-			printf("WIFI disconnected\n");
-			break;
-		}
-
-		if(timeout == 0) {
-			printf("ERROR: Deassoc timeout!\n");
-			ret = RTW_TIMEOUT;
-			break;
-		}
-
-		vTaskDelay(wifi_test_timeout_step_ms/portTICK_RATE_MS);
-		timeout --;
-	}
-    printf("\n\r");
-exit:
-    init_wifi_struct( );
-	return;
 }
 
 /*-------------------------------------------------------------------------------------
@@ -337,7 +212,8 @@ void fATOF(int argc, char *argv[])
 // Open connections
 void fATON(int argc, char *argv[])
 {
-	wifi_off();
+	wifi_run();
+//	wifi_on();
 //	connect_start();
 }
 

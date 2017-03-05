@@ -8,7 +8,7 @@
 * Openocd compatible JTAG adapter (jlink/st-link/cmsis-dap/versaloon...)
 
 ### Sofrware ###
-SDK3.5
+SDK3.5.1
 https://github.com/pvvx/RTL00MP3
 
 LIBRTLHTTPD

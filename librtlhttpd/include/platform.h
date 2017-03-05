@@ -16,6 +16,7 @@ typedef RtosConnType* ConnTypePtr;
 #ifndef __ets__
 //#define httpd_printf(fmt, ...) printf(fmt, ##__VA_ARGS__)
 #define httpd_printf(fmt, ...) DiagPrintf(fmt, ##__VA_ARGS__) // rtl_printf(fmt, ##__VA_ARGS__)
+#define strcasecmp(a, b) _stricmp(a, b)
 #else
 #define httpd_printf(fmt, ...) os_printf(fmt, ##__VA_ARGS__)
 #endif
@@ -26,6 +27,7 @@ typedef RtosConnType* ConnTypePtr;
 #define strcpy(a, b) os_strcpy(a, b)
 #define strncpy(a, b, c) os_strncpy(a, b, c)
 #define strcmp(a, b) os_strcmp(a, b)
+#define strcasecmp(a, b) _stricmp(a, b, c)
 #define strncmp(a, b, c) os_strncmp(a, b, c)
 #define malloc(x) os_malloc(x)
 #define free(x) os_free(x)
