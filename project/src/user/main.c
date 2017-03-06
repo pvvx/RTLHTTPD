@@ -38,12 +38,6 @@
 #endif
 
 extern void wifi_init_thrd();
-extern void rtl_libc_init(void);
-
-void __low_level_init(void)
-{
-	rtl_libc_init();
-}
 
 /* RAM/TCM/Heaps info */
 void ShowMemInfo(void)
