@@ -295,6 +295,32 @@ void fATDS(int argc, char *argv[]) 	// Deep sleep
 #endif
 }
 
+//-- Test tsf (64-bits counts, 1 us step) ---
+
+#include "hal_com_reg.h"
+
+#define ReadTSF_Lo32() (*((volatile unsigned int *)(WIFI_REG_BASE + REG_TSFTR)))
+#define ReadTSF_Hi32() (*((volatile unsigned int *)(WIFI_REG_BASE + REG_TSFTR1)))
+
+uint64_t get_tsf(void)
+{
+	return *((uint64_t *)(WIFI_REG_BASE + REG_TSFTR));
+}
+
+extern void wait_us(int us);
+
+void fATSF(int argc, char *argv[])
+{
+	printf("Test TSF & wait_us()\n");
+	for(int i = 0; i <= 200; i+=2) {
+		uint32_t x = ReadTSF_Lo32();
+		wait_us(i);
+		printf("%d us\n", ReadTSF_Lo32() - x);
+	}
+	uint64_t tsf = get_tsf();
+	printf("TSF: %08x%08x\n", (uint32_t)(tsf>>32), (uint32_t)(tsf));
+}
+
 MON_RAM_TAB_SECTION COMMAND_TABLE console_commands1[] = {
 		{"ATST", 0, fATST, ": Memory info"},
 		{"ATLW", 0, fATLW, ": LwIP Info"},
@@ -302,6 +328,7 @@ MON_RAM_TAB_SECTION COMMAND_TABLE console_commands1[] = {
 		{"ATSD", 1, fATSD, "=<ADDRES(hex)>[,COUNT(dec)]: Dump dword register"},
 		{"ATSW", 2, fATSW, "=<ADDRES(hex)>,<DATA(hex)>: Set register"},
 		{"ATDS", 0, fATDS, "=[TIME(ms)]: Deep sleep"},
+//		{"ATSF", 0, fATSF, ": Test TSF value"},
 };
 
 #endif //#ifdef CONFIG_AT_USR

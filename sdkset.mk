@@ -207,10 +207,10 @@ SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/sleep.c
 #SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/spdio_api.c
 #SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/spi_api.c
 SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/sys_api.c
-#SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/timer_api.c
+SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/timer_api.c
 SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/us_ticker.c
 SRC_C += sdk/component/common/mbed/common/us_ticker_api.c
-#SRC_C += sdk/component/common/mbed/common/wait_api.c
+SRC_C += sdk/component/common/mbed/common/wait_api.c
 SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/wdt_api.c
 
 #peripheral - hal
