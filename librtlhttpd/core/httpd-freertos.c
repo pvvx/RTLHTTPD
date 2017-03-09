@@ -21,7 +21,9 @@ Thanks to my collague at Espressif for writing the foundations of this code.
 #include "semphr.h"
 
 #include "sockets.h"
-
+#ifndef HTTPD_STACKSIZE
+#define HTTPD_STACKSIZE 2400
+#endif
 
 static int httpPort;
 static int httpMaxConnCt;

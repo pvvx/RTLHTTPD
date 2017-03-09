@@ -60,7 +60,11 @@ void main(void)
 
 #ifdef CONFIG_WDG_ON_IDLE
 	HAL_PERI_ON_WRITE32(REG_SOC_FUNC_EN, HAL_PERI_ON_READ32(REG_SOC_FUNC_EN) & 0x1FFFFF);
+#if CONFIG_DEBUG_LOG > 3
+	WDGInitial(CONFIG_WDG_ON_IDLE * 3000); // 30 s
+#else
 	WDGInitial(CONFIG_WDG_ON_IDLE * 1000); // 10 s
+#endif
 	WDGStart();
 #endif
 
@@ -75,11 +79,8 @@ void main(void)
 	ShowMemInfo(); // RAM/TCM/Heaps info
 #endif
 
-	/* wlan intialization */
-#if defined(CONFIG_WIFI_NORMAL) && defined(CONFIG_NETWORK)
-//	xTaskCreate(wc_start, "wc_start", 4096, NULL, tskIDLE_PRIORITY + 1 + PRIORITIE_OFFSET, NULL);
-	xTaskCreate(wifi_init_thrd, "wc_start", 1024, NULL, tskIDLE_PRIORITY + 1 + PRIORITIE_OFFSET, NULL);
-#endif
+	/* wlan & user_start intialization */
+	xTaskCreate(wifi_init_thrd, "wc_start", 1024, NULL, tskIDLE_PRIORITY + 0 + PRIORITIE_OFFSET, NULL);
 	/*Enable Schedule, Start Kernel*/
 #if defined(CONFIG_KERNEL) && !TASK_SCHEDULER_DISABLED
 #ifdef PLATFORM_FREERTOS

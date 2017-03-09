@@ -23,24 +23,6 @@ extern void wifi_run(void);
 
 #define printf rtl_printf // DiagPrintf
 
-/* fastconnect use wifi AT command. Not init_wifi_struct when log service disabled
- * static initialize all values for using fastconnect when log service disabled
- */
-
-_WEAK void connect_start(void)
-{
-#ifdef CONFIG_DEBUG_LOG
-	info_printf("%s: Time at start %d ms.\n", __func__, xTaskGetTickCount());
-#endif
-}
-
-_WEAK void connect_close(void)
-{
-#ifdef CONFIG_DEBUG_LOG
-	info_printf("%s: Time at start %d ms.\n", __func__, xTaskGetTickCount());
-#endif
-}
-
 /* RAM/TCM/Heaps info */
 extern void ShowMemInfo(void);
 /*
@@ -80,12 +62,6 @@ void fATST(int argc, char *argv[]) {
 #endif
 }
 
-void fATWC(int argc, char *argv[]){
-}
-
-// WIFI Disconnect
-void fATWD(int argc, char *argv[]){
-}
 
 /*-------------------------------------------------------------------------------------
  Копирует данные из области align(4) (flash, registers, ...) в область align(1) (ram)
@@ -200,21 +176,6 @@ void fATSD(int argc, char *argv[])
 void fATSW(int argc, char *argv[])
 {
 	CmdWriteWord(argc-1, (unsigned char**)(argv+1));
-}
-
-// Close connections
-void fATOF(int argc, char *argv[])
-{
-	connect_close();
-	wifi_off();
-}
-
-// Open connections
-void fATON(int argc, char *argv[])
-{
-	wifi_run();
-//	wifi_on();
-//	connect_start();
 }
 
 /* Get one byte from the 4-byte address */
@@ -335,16 +296,12 @@ void fATDS(int argc, char *argv[]) 	// Deep sleep
 }
 
 MON_RAM_TAB_SECTION COMMAND_TABLE console_commands1[] = {
-		{"ATPN", 1, fATWC, "=<SSID>[,<PASSPHRASE>[,WEPKEY]]: WIFI Connect to AP"},
-		{"ATWD", 0, fATWD, ": WIFI Disconnect"},
 		{"ATST", 0, fATST, ": Memory info"},
 		{"ATLW", 0, fATLW, ": LwIP Info"},
 		{"ATSB", 1, fATSB, "=<ADDRES(hex)>[,COUNT(dec)]: Dump byte register"},
 		{"ATSD", 1, fATSD, "=<ADDRES(hex)>[,COUNT(dec)]: Dump dword register"},
 		{"ATSW", 2, fATSW, "=<ADDRES(hex)>,<DATA(hex)>: Set register"},
 		{"ATDS", 0, fATDS, "=[TIME(ms)]: Deep sleep"},
-		{"ATON", 0, fATON, ": Open connections"},
-		{"ATOF", 0, fATOF, ": Close connections"}
 };
 
 #endif //#ifdef CONFIG_AT_USR

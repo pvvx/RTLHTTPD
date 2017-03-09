@@ -377,14 +377,15 @@ ADD_SRC_C += sdk/component/soc/realtek/8195a/misc/rtl_std_lib/lib_rtlstd/rtl_mat
 #ADD_SRC_C += sdk/component/common/example/googlenest/example_google.c  
 #ADD_SRC_C += sdk/component/common/example/mdns/example_mdns.c
 #ADD_SRC_C += sdk/component/common/example/socket_select/example_socket_select.c
-ADD_SRC_C += sdk/component/common/example/wlan_fast_connect/example_wlan_fast_connect.c
-ADD_SRC_C += sdk/component/common/example/uart_atcmd/example_uart_atcmd.c
+#ADD_SRC_C += sdk/component/common/example/wlan_fast_connect/example_wlan_fast_connect.c
+#ADD_SRC_C += sdk/component/common/example/uart_atcmd/example_uart_atcmd.c
 #ADD_SRC_C += sdk/component/common/example/xml/example_xml.c
 #ADD_SRC_C += sdk/component/common/example/example_entry.c
 #ADD_SRC_C += sdk/component/common/drivers/sdio/realtek/sdio_host/src/sd.c 
 #ADD_SRC_C += sdk/component/common/drivers/sdio/realtek/sdio_host/src/sdio_host.c 
 #ADD_SRC_C += sdk/component/soc/realtek/8195a/fwlib/src/hal_sdio_host.c
 #ADD_SRC_C += sdk/component/common/file_system/fatfs/disk_if/src/sdcard.c
+ADD_SRC_C += sdk/component/common/api/wifi_api.c 
 #=============================================
 # PROJECT
 #=============================================
@@ -392,7 +393,6 @@ ADD_SRC_C += sdk/component/common/example/uart_atcmd/example_uart_atcmd.c
 ADD_SRC_C += project/src/FreeRTOS-openocd.c
 #user main
 ADD_SRC_C += project/src/user/main.c
-ADD_SRC_C += project/src/driver/wifi_api.c
 ADD_SRC_C += project/src/user/atcmd_user.c
 #ADD_SRC_C += project/src/user/wc_mgr.c
 ADD_SRC_C += project/src/user/http_server.c

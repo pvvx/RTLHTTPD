@@ -91,7 +91,7 @@ void write_buffer(UploadState_t* state)
 			while (tmp <= lastBlock) {
 				if (tmp != state->erasedAddress)
 				{
-					httpd_printf("-E: %x\t1000\n", tmp);
+					debug_printf("-E: %x\t1000\n", tmp);
 					if (!locked) {
 						device_mutex_lock(RT_DEV_LOCK_FLASH);
 						locked=1;
@@ -106,13 +106,13 @@ void write_buffer(UploadState_t* state)
 		if (!locked)
 			device_mutex_lock(RT_DEV_LOCK_FLASH);
 		if ((vLen & 3)==0) {
-			httpd_printf("PA: %x\t%x\t%x\n", vAddr, vLen, state->currentAddress);
+			debug_printf("PA: %x\t%x\t%x\n", vAddr, vLen, state->currentAddress);
 			// aligned multi-page write (fast)
 			flash_burst_write(&flashobj, vAddr, vLen,
 					state->pageData + (vAddr - state->currentAddress));
 		}
 		else {
-			httpd_printf("PU: %x\t%x\t%x\n", vAddr, vLen, state->currentAddress);
+			debug_printf("PU: %x\t%x\t%x\n", vAddr, vLen, state->currentAddress);
 			// unaligned multi-page write (slow)
 			flash_stream_write(&flashobj, vAddr, vLen,
 					state->pageData + (vAddr - state->currentAddress));
@@ -120,7 +120,7 @@ void write_buffer(UploadState_t* state)
 		device_mutex_unlock(RT_DEV_LOCK_FLASH);
 	}
 	else
-		httpd_printf("--: %x\n", state->currentAddress);
+		debug_printf("--: %x\n", state->currentAddress);
 	state->currentAddress+=state->pagePos;
 	state->pagePos=0;
 }
@@ -144,10 +144,10 @@ int cgiUploadFirmware(HttpdConnData *connData)
 
 	if (state==NULL) {
 		//First call. Allocate and initialize state variable.
-		httpd_printf("Firmware upload cgi start.\n");
+		info_printf("Firmware upload cgi start.\n");
 		state=malloc(sizeof(UploadState_t));
 		if (state==NULL) {
-			httpd_printf("Can't allocate firmware upload struct!\n");
+			error_printf("Can't allocate firmware upload struct!\n");
 			return HTTPD_CGI_DONE;
 		}
 		memset(state, 0, sizeof(UploadState_t));
@@ -161,11 +161,11 @@ int cgiUploadFirmware(HttpdConnData *connData)
 
 	while (dataLen!=0) {
 		if (state->state==FLST_START) {
-			httpd_printf("POST Header length: %d\n", connData->priv->headPos);
+			info_printf("POST Header length: %d\n", connData->priv->headPos);
 			for (int d=0; d<= connData->priv->headPos; d++)
 			{
 				if (connData->priv->head[d]!=0x00)
-					httpd_printf("%c", connData->priv->head[d]);
+					debug_printf("%c", connData->priv->head[d]);
 				//else
 				//	DiagPrintf("\n");
 			}
@@ -178,8 +178,8 @@ int cgiUploadFirmware(HttpdConnData *connData)
 			state->autoErase = atoi(b) & 255;
 			httpdGetHeader(connData, "Content-Length", b, 20);
 			state->len = atoi(b);
-			httpd_printf("Start address=%d\t", state->currentAddress);
-			httpd_printf("Length=%d\tErase=%d\n", state->len, state->autoErase);
+			info_printf("Start address=%d\t", state->currentAddress);
+			info_printf("Length=%d\tErase=%d\n", state->len, state->autoErase);
 			if (state->len ==0)
 				return HTTPD_CGI_DONE;
 
@@ -191,7 +191,7 @@ int cgiUploadFirmware(HttpdConnData *connData)
 		} else if (state->state==FLST_WRITE) {
 			int32_t lenLeft= PAGELEN - state->pagePos;   // free space in page buffer
 			if (state->len < lenLeft) {
-				httpd_printf("Last buffer\n");
+				info_printf("Last buffer\n");
 				lenLeft=state->len; //last buffer can be a cut-off one
 			}
 			//See if we need to write the page.
@@ -216,19 +216,19 @@ int cgiUploadFirmware(HttpdConnData *connData)
 				state->state=FLST_DONE;
 
 		} else if (state->state==FLST_DONE) {
-			httpd_printf("Huh? %d bogus bytes received after data received.\n", dataLen);
+			info_printf("Huh? %d bogus bytes received after data received.\n", dataLen);
 			//Ignore those bytes.
 			dataLen=0;
 		} else if (state->state==FLST_ERROR) {
 			//Just eat up any bytes we receive.
-			DiagPrintf("FLST_ERROR\n");
+			error_printf("FLST_ERROR\n");
 			dataLen=0;
 		}
 	}
 
 	if (connData->post->len==connData->post->received) {
 			//We're done! Format a response.
-			httpd_printf("Upload done. Sending response.\n");
+			info_printf("Upload done. Sending response.\n");
 			httpdStartResponse(connData, state->state==FLST_ERROR?400:200);
 			httpdHeader(connData, "Content-Type", "text/plain");
 			httpdEndHeaders(connData);

@@ -70,7 +70,7 @@ a memory exception, crashing the program.
 
 EspFsInitResult ICACHE_FLASH_ATTR espFsInit(void *flashAddress) {
 #if CONFIG_DEBUG_LOG > 4
-	httpd_printf("espFsInit(%p)\n", flashAddress);
+	debug_printf("espFsInit(%p)\n", flashAddress);
 #endif
 #ifdef __ets__
 	if((uint32_t)flashAddress > 0x40000000) {
@@ -113,7 +113,7 @@ void ICACHE_FLASH_ATTR readFlashUnaligned(char *dst, char *src, int len) {
 // Returns flags of opened file.
 int ICACHE_FLASH_ATTR espFsFlags(EspFsFile *fh) {
 	if (fh == NULL) {
-		httpd_printf("File handle not ready\n");
+		error_printf("File handle not ready\n");
 		return -1;
 	}
 
@@ -128,7 +128,7 @@ EspFsFile ICACHE_FLASH_ATTR *espFsOpen(char *fileName) {
 	httpd_printf("espFsOpen(%s)\n", fileName);
 #endif
 	if (espFsData == NULL) {
-		httpd_printf("Call espFsInit first!\n");
+		error_printf("Call espFsInit first!\n");
 		return NULL;
 	}
 	char *p=espFsData;
@@ -145,11 +145,11 @@ EspFsFile ICACHE_FLASH_ATTR *espFsOpen(char *fileName) {
 		spi_flash_read((uint32_t)p, (uint32_t*)&h, sizeof(EspFsHeader));
 
 		if (h.magic!=ESPFS_MAGIC) {
-			httpd_printf("Magic mismatch. EspFS image broken.\n");
+			error_printf("Magic mismatch. EspFS image broken.\n");
 			return NULL;
 		}
 		if (h.flags&FLAG_LASTFILE) {
-			httpd_printf("End of image.\n");
+			info_printf("End of image.\n");
 			return NULL;
 		}
 		//Grab the name of the file.
@@ -178,12 +178,12 @@ EspFsFile ICACHE_FLASH_ATTR *espFsOpen(char *fileName) {
 				//Decoder params are stored in 1st byte.
 				readFlashUnaligned(&parm, r->posComp, 1);
 				r->posComp++;
-				httpd_printf("Heatshrink compressed file; decode parms = %x\n", parm);
+				info_printf("Heatshrink compressed file; decode parms = %x\n", parm);
 				dec=heatshrink_decoder_alloc(16, (parm>>4)&0xf, parm&0xf);
 				r->decompData=dec;
 #endif
 			} else {
-				httpd_printf("Invalid compression: %d\n", h.compression);
+				error_printf("Invalid compression: %d\n", h.compression);
 				return NULL;
 			}
 			return r;
@@ -197,7 +197,7 @@ EspFsFile ICACHE_FLASH_ATTR *espFsOpen(char *fileName) {
 //Read len bytes from the given file into buff. Returns the actual amount of bytes read.
 int ICACHE_FLASH_ATTR espFsRead(EspFsFile *fh, char *buff, int len) {
 #if CONFIG_DEBUG_LOG > 4
-	httpd_printf("espFsRead(%p, %p, %d)\n", fh, buff, len);
+	debug_printf("espFsRead(%p, %p, %d)\n", fh, buff, len);
 #endif
 	int flen;
 #ifdef ESPFS_HEATSHRINK
@@ -268,7 +268,7 @@ int ICACHE_FLASH_ATTR espFsRead(EspFsFile *fh, char *buff, int len) {
 //Close the file.
 void ICACHE_FLASH_ATTR espFsClose(EspFsFile *fh) {
 #if CONFIG_DEBUG_LOG > 4
-	httpd_printf("EspFsFile(%p)\n", fh);
+	debug_printf("EspFsFile(%p)\n", fh);
 #endif
 	if (fh==NULL) return;
 #ifdef ESPFS_HEATSHRINK

@@ -170,7 +170,7 @@ HttpdBuiltInUrl builtInUrls[]=
 };
 
 
-void httpd_start(void)
+void user_start(void)
 {
 	info_printf("GPIO init\n");
 	//HalPinCtrlRtl8195A(UART2,0,0);  // uart2 and pa_4 share the same pin
@@ -183,7 +183,7 @@ void httpd_start(void)
 	EspFsInitResult e = ESPFS_INIT_RESULT_NO_IMAGE;
 
 	captdnsInit();
-	vTaskDelay(100);
+//	vTaskDelay(100);
 
 	debug_printf("[Before espfsInit]: RAM heap\t%d bytes\tTCM heap\t%d bytes\n",
 			xPortGetFreeHeapSize(), tcm_heap_freeSpace());
