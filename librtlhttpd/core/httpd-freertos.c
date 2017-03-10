@@ -64,7 +64,7 @@ void ICACHE_FLASH_ATTR httpdPlatUnlock() {
 }
 
 
-#define RECV_BUF_SIZE 2048
+#define RECV_BUF_SIZE (2*TCP_MSS) //2048
 static void platHttpServerTask(void *pvParameters) {
 	int32 listenfd;
 	int32 remotefd;

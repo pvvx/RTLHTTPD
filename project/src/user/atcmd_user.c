@@ -19,7 +19,7 @@
 
 #include "lwip/tcp_impl.h"
 
-extern void wifi_run(void);
+extern char str_rom_57ch3Dch0A[]; // "=========================================================\n" 57
 
 #define printf rtl_printf // DiagPrintf
 
@@ -54,7 +54,7 @@ void fATST(int argc, char *argv[]) {
 		if(pcWriteBuffer) {
 			vTaskList((char*)pcWriteBuffer);
 			printf("\nTask List:\n");
-	        printf("==============================\n");
+			printf(&str_rom_57ch3Dch0A[7]); // "==========================================\n"
 	        printf("Name\t  Status Priority HighWaterMark TaskNumber\n%s\n", pcWriteBuffer);
 			free(pcWriteBuffer);
 		}
@@ -312,13 +312,13 @@ extern void wait_us(int us);
 void fATSF(int argc, char *argv[])
 {
 	printf("Test TSF & wait_us()\n");
-	for(int i = 0; i <= 200; i+=2) {
+	for(int i = 0; i <= 300; i++) {
 		uint32_t x = ReadTSF_Lo32();
 		wait_us(i);
-		printf("%d us\n", ReadTSF_Lo32() - x);
+		printf("%d us\r", ReadTSF_Lo32() - x);
 	}
 	uint64_t tsf = get_tsf();
-	printf("TSF: %08x%08x\n", (uint32_t)(tsf>>32), (uint32_t)(tsf));
+	printf("\nTSF: %08x%08x\n", (uint32_t)(tsf>>32), (uint32_t)(tsf));
 }
 
 MON_RAM_TAB_SECTION COMMAND_TABLE console_commands1[] = {
@@ -328,7 +328,7 @@ MON_RAM_TAB_SECTION COMMAND_TABLE console_commands1[] = {
 		{"ATSD", 1, fATSD, "=<ADDRES(hex)>[,COUNT(dec)]: Dump dword register"},
 		{"ATSW", 2, fATSW, "=<ADDRES(hex)>,<DATA(hex)>: Set register"},
 		{"ATDS", 0, fATDS, "=[TIME(ms)]: Deep sleep"},
-//		{"ATSF", 0, fATSF, ": Test TSF value"},
+		{"ATSF", 0, fATSF, ": Test TSF value"},
 };
 
 #endif //#ifdef CONFIG_AT_USR

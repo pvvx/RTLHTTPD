@@ -25,7 +25,6 @@
 #include "http_server.h"
 
 
-
 #define GPIO_LED_PIN       PA_4
 
 // PA4 - RTL00 red led:  1=off, 0=on

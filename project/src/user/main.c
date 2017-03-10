@@ -80,7 +80,7 @@ void main(void)
 #endif
 
 	/* wlan & user_start intialization */
-	xTaskCreate(wifi_init_thrd, "wc_start", 1024, NULL, tskIDLE_PRIORITY + 0 + PRIORITIE_OFFSET, NULL);
+	xTaskCreate(wifi_init_thrd, "wc_start", 1024, NULL, tskIDLE_PRIORITY + 1 + PRIORITIE_OFFSET, NULL);
 	/*Enable Schedule, Start Kernel*/
 #if defined(CONFIG_KERNEL) && !TASK_SCHEDULER_DISABLED
 #ifdef PLATFORM_FREERTOS

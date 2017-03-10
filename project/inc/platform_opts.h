@@ -62,7 +62,7 @@
 //#define CONFIG_AT_SYS  		1	// add pvxx
 //#define CONFIG_AT_WIFI 		1	// add pvxx
 #define CONFIG_INIT_NET		1 	// init lwip layer when start up
-#define CONFIG_WIFI_IND_USE_THREAD	1	// wifi indicate worker thread
+#define CONFIG_WIFI_IND_USE_THREAD	0	// wifi indicate worker thread
 
 //on/off relative commands in log service
 #define CONFIG_SSL_CLIENT	0
