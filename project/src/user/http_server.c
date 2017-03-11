@@ -23,7 +23,7 @@
 #include "captdns.h"
 
 #include "http_server.h"
-
+#include "netbios/netbios.h"
 
 #define GPIO_LED_PIN       PA_4
 
@@ -180,6 +180,8 @@ void user_start(void)
 	gpio_write(&gpio_led, 1);           // 1=off, 0=on
 
 	EspFsInitResult e = ESPFS_INIT_RESULT_NO_IMAGE;
+
+	netbios_init();
 
 	captdnsInit();
 //	vTaskDelay(100);
