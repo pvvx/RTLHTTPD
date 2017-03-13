@@ -394,6 +394,7 @@ ADD_SRC_C += sdk/component/common/api/wifi_api.c
 ADD_SRC_C += project/src/FreeRTOS-openocd.c
 #user main
 ADD_SRC_C += project/src/user/main.c
+#ADD_SRC_C += project/src/user/test.c
 ADD_SRC_C += project/src/user/atcmd_user.c
 #ADD_SRC_C += project/src/user/wc_mgr.c
 ADD_SRC_C += project/src/user/http_server.c
