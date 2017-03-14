@@ -24,6 +24,13 @@
 #include "rtl8195a_peri_on.h"
 #endif
 
+/* ---------------------------------------------------
+  *  Customized Signature (Image Name)
+  * ---------------------------------------------------*/
+#include "section_config.h"
+SECTION(".custom.validate.rodata")
+const unsigned char cus_sig[32] = "HTTPD Sample";
+
 #ifdef CONFIG_DEBUG_LOG
 #define DEBUG_MAIN_LEVEL CONFIG_DEBUG_LOG
 #else

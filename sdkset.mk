@@ -114,13 +114,13 @@ SRC_C += sdk/component/common/api/lwip_netconf.c
 #network - app
 #SRC_C += sdk/component/common/utilities/ssl_client.c
 #SRC_C += sdk/component/common/utilities/ssl_client_ext.c
-SRC_C += sdk/component/common/utilities/tcptest.c
-SRC_C += sdk/component/common/utilities/uart_ymodem.c
-SRC_C += sdk/component/common/utilities/update.c
+#SRC_C += sdk/component/common/utilities/tcptest.c
+#SRC_C += sdk/component/common/utilities/uart_ymodem.c
+#SRC_C += sdk/component/common/utilities/update.c
 #SRC_C += sdk/component/common/application/uart_adapter/uart_adapter.c
-SRC_C += sdk/component/common/api/network/src/wlan_network.c
-SRC_C += sdk/component/common/api/wifi_interactive_mode.c
-SRC_C += sdk/component/common/api/network/src/ping_test.c
+#SRC_C += sdk/component/common/api/network/src/wlan_network.c
+#SRC_C += sdk/component/common/api/wifi_interactive_mode.c
+#SRC_C += sdk/component/common/api/network/src/ping_test.c
 
 #network - lwip
 SRC_C += sdk/component/common/network/lwip/lwip_v1.4.1/src/api/api_lib.c
