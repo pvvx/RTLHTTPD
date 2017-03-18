@@ -58,7 +58,7 @@ void main(void)
 {
 #if DEBUG_MAIN_LEVEL > 3
 	 ConfigDebugErr  = -1;
-	 ConfigDebugInfo =  ~(_DBG_SPI_FLASH_);//|_DBG_TCM_HEAP_);
+	 ConfigDebugInfo = ~(_DBG_SPI_FLASH_);//|_DBG_TCM_HEAP_);
 	 ConfigDebugWarn = -1;
 	 CfgSysDebugErr = -1;
 	 CfgSysDebugInfo = -1;

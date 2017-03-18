@@ -97,8 +97,9 @@ SRC_C += sdk/component/soc/realtek/8195a/cmsis/device/system_8195a.c
 #DRAM_C += sdk/component/common/api/at_cmd/atcmd_wifi.c
 #SRC_C += sdk/component/common/api/at_cmd/log_service.c
 #SRC_C += sdk/component/soc/realtek/8195a/misc/driver/low_level_io.c
-#SRC_C += sdk/component/soc/realtek/8195a/misc/driver/rtl_consol.c
+#console new/old
 SRC_C += sdk/component/soc/realtek/8195a/misc/driver/rtl_console_new.c
+#SRC_C += sdk/component/soc/realtek/8195a/misc/driver/rtl_consol.c
 
 #network - api
 SRC_C += sdk/component/common/api/wifi/rtw_wpa_supplicant/wpa_supplicant/wifi_eap_config.c
@@ -367,10 +368,13 @@ ADD_SRC_C += sdk/component/soc/realtek/8195a/fwlib/src/hal_misc.c
 ADD_SRC_C += sdk/component/soc/realtek/8195a/fwlib/ram_lib/startup.c 
 ADD_SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/flash_eep.c 
 ADD_SRC_C += sdk/component/soc/realtek/8195a/misc/rtl_std_lib/lib_rtlstd/ram_libc.c 
-ADD_SRC_C += sdk/component/soc/realtek/8195a/misc/rtl_std_lib/lib_rtlstd/ram_pvvx_libc.c 
 ADD_SRC_C += sdk/component/soc/realtek/8195a/misc/rtl_std_lib/lib_rtlstd/ram_libgloss_retarget.c
 ADD_SRC_C += sdk/component/soc/realtek/8195a/misc/rtl_std_lib/lib_rtlstd/rtl_eabi_cast_ram.c
 ADD_SRC_C += sdk/component/soc/realtek/8195a/misc/rtl_std_lib/lib_rtlstd/rtl_math_ram.c
+#if +- nostdlib..
+ADD_SRC_C += sdk/component/soc/realtek/8195a/misc/rtl_std_lib/lib_rtlstd/ram_pvvx_libc.c 
+#if c_printf() float
+#ADD_SRC_C += sdk/component/soc/realtek/8195a/misc/rtl_std_lib/lib_rtlstd/c_stdio.c
 # -------------------------------------------------------------------
 # SAMPLES
 # -------------------------------------------------------------------
