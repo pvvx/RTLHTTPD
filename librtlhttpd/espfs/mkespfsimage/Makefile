@@ -3,12 +3,14 @@ USE_HEATSHRINK ?= yes
 
 CFLAGS=-I../../lib/heatshrink -I../../include -I.. -std=gnu99
 ifeq ("$(GZIP_COMPRESSION)","yes")
-CFLAGS		+= -DESPFS_GZIP
+CFLAGS += -DESPFS_GZIP
 endif
 
 ifeq ("$(USE_HEATSHRINK)","yes")
-CFLAGS		+= -DESPFS_HEATSHRINK
+CFLAGS += -DESPFS_HEATSHRINK
 endif
+
+CC=gcc
 
 OBJS=main.o heatshrink_encoder.o
 TARGET=mkespfsimage
