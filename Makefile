@@ -54,5 +54,5 @@ readfullflash:
 
 .PHONY:	prerequirement
 prerequirement:
-#	@$(file >DEPENDENCY_LIST.txt,$(DEPENDENCY_LIST))
+	@$(file >DEPENDENCY_LIST.txt,$(DEPENDENCY_LIST))
 	
