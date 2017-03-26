@@ -12,7 +12,7 @@ Esp8266 http server - core routines
  */
 #define FREERTOS
 #ifndef HTTPD_MAX_CONNECTIONS
-#define HTTPD_MAX_CONNECTIONS 5
+#define HTTPD_MAX_CONNECTIONS 10
 #endif
 
 #define ICACHE_FLASH_ATTR
