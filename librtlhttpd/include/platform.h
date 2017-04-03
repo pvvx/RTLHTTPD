@@ -1,6 +1,6 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
-
+#include "user_config.h"
 #define  FREERTOS
 #ifdef FREERTOS
 //#include "esp_timer.h"

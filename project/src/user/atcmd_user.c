@@ -274,7 +274,7 @@ void fATLW(int argc, char *argv[]) 	// Info Lwip
 void fATDS(int argc, char *argv[]) 	// Deep sleep
 {
 	uint32 sleep_ms = 10000;
-	if(argc > 2) sleep_ms = atoi(argv[1]);
+	if(argc > 1) sleep_ms = atoi(argv[1]);
 #if 0
 	// turn off log uart
     sys_log_uart_off();
@@ -294,6 +294,28 @@ void fATDS(int argc, char *argv[]) 	// Deep sleep
     deepsleep_ex(DSLEEP_WAKEUP_BY_TIMER, sleep_ms);
 #endif
 }
+/*------------------------------------------------------------------------------
+ * power saving mode
+ *----------------------------------------------------------------------------*/
+void fATSP(int argc, char *argv[])
+{
+	if(argc > 2) {
+		switch (argv[1][0]) {
+		case 'a': // acquire
+		{
+			acquire_wakelock(atoi(argv[2]));
+			break;
+		}
+		case 'r': // release
+		{
+			release_wakelock(atoi(argv[2]));
+			break;
+		}
+		}
+	}
+	printf("WakeLock Status %d\n", get_wakelock_status());
+}
+
 
 MON_RAM_TAB_SECTION COMMAND_TABLE console_commands1[] = {
 		{"ATST", 0, fATST, ": Memory info"},
@@ -302,6 +324,7 @@ MON_RAM_TAB_SECTION COMMAND_TABLE console_commands1[] = {
 		{"ATSD", 1, fATSD, "=<ADDRES(hex)>[,COUNT(dec)]: Dump dword register"},
 		{"ATSW", 2, fATSW, "=<ADDRES(hex)>,<DATA(hex)>: Set register"},
 		{"ATDS", 0, fATDS, "=[TIME(ms)]: Deep sleep"},
+		{"ATSP", 0, fATSP, "=<a,r>,<wakelock_status:1|2|4|8>: Power"}
 };
 
 #endif //#ifdef CONFIG_AT_USR

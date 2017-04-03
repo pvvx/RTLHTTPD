@@ -10,7 +10,7 @@
 
 //=========================================
 //==== Wlan Config ========================
-#define DEF_WIFI_MODE 		RTW_MODE_STA // RTW_MODE_STA_AP, RTW_MODE_AP, RTW_MODE_STA
+#define DEF_WIFI_MODE 		RTW_MODE_AP // RTW_MODE_STA_AP, RTW_MODE_AP, RTW_MODE_STA
 #define DEF_WIFI_AP_STATIONS 3  // Max number of STAs, should be 1..3, default is 3
 #define DEF_WIFI_COUNTRY	RTW_COUNTRY_RU
 #define DEF_WIFI_TX_PWR		RTW_TX_PWR_PERCENTAGE_25 // RTW_TX_PWR_PERCENTAGE_75 // RTW_TX_PWR_PERCENTAGE_100

@@ -8,8 +8,7 @@
 #ifndef HTTP_SERVER_H_
 #define HTTP_SERVER_H_
 
-
-#define FLASH_APP_BASE  0xd0000
-void httpd_start(void);
+void GpioLedInit(void);
+void websocketBcast(void *arg);
 
 #endif /* HTTP_SERVER_H_ */

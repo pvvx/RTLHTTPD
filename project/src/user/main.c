@@ -12,7 +12,6 @@
 #include "hal_log_uart.h"
 #include "hal_misc.h"
 #include "atcmd_user.h"
-#include "wc_mgr.h"
 #include "diag.h"
 //#include "wdt_api.h"
 //#include <osdep_service.h>
@@ -44,7 +43,7 @@ const unsigned char cus_sig[32] = "HTTPD Sample";
 #define CONFIG_INTERACTIVE_MODE     1
 #endif
 
-extern void wifi_init_thrd();
+extern void user_init_thrd(void);
 
 /* RAM/TCM/Heaps info */
 void ShowMemInfo(void)
@@ -87,7 +86,8 @@ void main(void)
 #endif
 
 	/* wlan & user_start intialization */
-	xTaskCreate(wifi_init_thrd, "wc_start", 1024, NULL, tskIDLE_PRIORITY + 1 + PRIORITIE_OFFSET, NULL);
+	xTaskCreate(user_init_thrd, "user_init", 1024, NULL, tskIDLE_PRIORITY + 1 + PRIORITIE_OFFSET, NULL);
+
 	/*Enable Schedule, Start Kernel*/
 #if defined(CONFIG_KERNEL) && !TASK_SCHEDULER_DISABLED
 #ifdef PLATFORM_FREERTOS

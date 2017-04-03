@@ -18,7 +18,6 @@
 #include <wifi/wifi_conf.h>
 #include <wifi/wifi_util.h>
 #endif
-
 #include "lwip_netconf.h"
 #include <platform/platform_stdlib.h>
 #include <dhcp/dhcps.h>
@@ -30,15 +29,6 @@
 #include "http_server.h"
 
 //rtw_mode_t wifi_mode = RTW_MODE_STA_AP; //RTW_MODE__NONE;
-
-
-#ifndef WLAN0_NAME
-#define WLAN0_NAME		"wlan0"
-#endif
-
-#ifndef WLAN1_NAME
-#define WLAN1_NAME      "wlan1"
-#endif
 
 
 #if CONFIG_LWIP_LAYER
@@ -85,7 +75,7 @@ static void init_wifi_struct(void)
 	ap.channel = 1;
 }
 
-static void LoadWifiSetting()
+static void get_wifi_setting_from_if()
 {
 	const char *ifname = WLAN0_NAME;
 
@@ -130,13 +120,26 @@ int wlan_reconnect(u8 *data, uint32_t len) {
 	rtl_printf("%s\n", __FUNCTION__);
 	return 0;
 }
+int write_reconnect_cb(u8 *data, uint32_t len)
+{
+	rtl_printf("%s\n", __FUNCTION__);
+	return 0;
+}
 
+extern void (*p_wlan_autoreconnect_hdl)(rtw_security_t, char*, int, char*, int, int);
+extern void wifi_autoreconnect_hdl  (rtw_security_t, char*, int, char*, int, int);
+// (not work if lib_wlan_mp.a ?)
+int sta_autoreconnect_setup(void)
+{
+	p_wlan_autoreconnect_hdl = wifi_autoreconnect_hdl;
+    //WLAN0_NAME, mode, retry_times, timeout
+    return wext_set_autoreconnect(WLAN0_NAME, 1, 20, 7);
+}
 
-void wc_start(void) {
-	int  ret;
-	void *semaphore = NULL;
-	int timeout = 10000/200;
+void reset_wifi_settings(void) {
 	char* ssid;
+
+	rtl_printf("%s\n", __func__);
 
 	//--------- Default wi-fi settigns ---------
 	// STATION settings
@@ -144,7 +147,7 @@ void wc_start(void) {
 	wifi.ssid.len = strlen(ssid);
 	memset((void*)&wifi.ssid.val[0], 0, sizeof(&wifi.ssid.val));
 	memcpy((void*)&wifi.ssid.val[0], (void*)ssid, wifi.ssid.len);
-	wifi.security_type = RTW_SECURITY_WPA2_AES_PSK; // RTW_SECURITY_OPEN;
+	wifi.security_type = RTW_SECURITY_OPEN; //RTW_SECURITY_WPA2_AES_PSK;
 	wifi.password = "0123456789"; //
 	wifi.password_len = strlen(wifi.password);
 	wifi.key_id =0;
@@ -159,10 +162,30 @@ void wc_start(void) {
 	ap.password = "0123456789";
 	ap.password_len = strlen(ap.password);
 	//------------------------------------------
+}
+void load_wifi_settings(void) {
+	rtl_printf("%s\n", __func__);
+#if 0
+	// ...
+	// load settings from flash
+	// ...
+#else
+	reset_wifi_settings();
+#endif
+}
+
+
+void wc_start(void) {
+	int  ret;
+	void *semaphore = NULL;
+	int timeout = 10000/200;
+
+
+
 
 	p_wlan_init_done_callback = NULL;
-	// Call back from application layer after wifi_connection success
-//	p_write_reconnect_ptr = NULL; //wlan_reconnect;
+
+
 
 	LwIP_Init();
 
@@ -186,7 +209,7 @@ void wc_start(void) {
 			ap.channel			//int channel
 	);
 	if (ret != RTW_SUCCESS) {
-		DiagPrintfPatch("ERROR: Operation failed!\n\n");
+		rtl_printf("ERROR: Operation failed!\n\n");
 		return;
 	}
 	while(1) {
@@ -194,14 +217,14 @@ void wc_start(void) {
 
 		if(wext_get_ssid(WLAN1_NAME, (unsigned char *) essid) > 0) {
 			if(strcmp((const char *) essid, (const char *)ap.ssid.val) == 0) {
-				DiagPrintfPatch("%s started\n", ap.ssid.val);
+				rtl_printf("%s started\n", ap.ssid.val);
 				ret = RTW_SUCCESS;
 				break;
 			}
 		}
 
 		if(timeout == 0) {
-			DiagPrintfPatch("ERROR: Start AP timeout!\n");
+			rtl_printf("ERROR: Start AP timeout!\n");
 			ret = RTW_TIMEOUT;
 			break;
 		}
@@ -221,6 +244,7 @@ void wc_start(void) {
 
 	show_info(2);
 
+	sta_autoreconnect_setup();
 
 	rtl_printf("[Wifi_on]: RAM heap\t%d bytes\tTCM heap\t%d bytes\n",
 			xPortGetFreeHeapSize(), tcm_heap_freeSpace());
@@ -238,7 +262,7 @@ void wc_start(void) {
 			xPortGetFreeHeapSize(), tcm_heap_freeSpace());
 	if(ret != RTW_SUCCESS) {
 		rtl_printf("ERROR: Operation failed! Error=%d\n", ret);
-		goto exit_fail;
+		//goto exit_fail;
 	} else {
 		// Start DHCPClient
 		LwIP_DHCP(0, DHCP_START);
@@ -251,7 +275,7 @@ void wc_start(void) {
 
 	}
 
-	//wifi_set_autoreconnect(1);
+
 
 	show_info(3);
 
@@ -259,8 +283,9 @@ void wc_start(void) {
 
 
 
-exit_fail:
+	exit_fail:
 	vTaskDelete(NULL);
 }
+
 
 

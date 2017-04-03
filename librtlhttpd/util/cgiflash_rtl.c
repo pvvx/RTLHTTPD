@@ -130,7 +130,7 @@ void write_buffer(UploadState_t* state)
 
 int cgiUploadFirmware(HttpdConnData *connData)
 {
-	CgiUploadFlashRtl_t *def=(CgiUploadFlashRtl_t*)connData->cgiArg;
+//	CgiUploadFlashRtl_t *def=(CgiUploadFlashRtl_t*)connData->cgiArg;
 	UploadState_t *state=(UploadState_t *)connData->cgiData;
 
 	uint8_t *data;

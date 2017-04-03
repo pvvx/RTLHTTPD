@@ -265,6 +265,6 @@ static void platHttpServerTask(void *pvParameters) {
 void ICACHE_FLASH_ATTR httpdPlatInit(int port, int maxConnCt) {
 	httpPort=port;
 	httpMaxConnCt=maxConnCt;
-	xTaskCreate(platHttpServerTask, (const signed char *)"esphttpd", HTTPD_STACKSIZE, NULL, tskIDLE_PRIORITY + 3 + PRIORITIE_OFFSET, NULL);
+	xTaskCreate(platHttpServerTask, (const signed char *)"esphttpd", HTTPD_STACKSIZE, NULL, HTTPD_PRIORITY, NULL);
 }
 

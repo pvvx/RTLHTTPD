@@ -4,6 +4,6 @@
 #include "httpd.h"
 
 int cgiEspFsHook(HttpdConnData *connData);
-int ICACHE_FLASH_ATTR cgiEspFsTemplate(HttpdConnData *connData);
+int cgiEspFsTemplate(HttpdConnData *connData);
 
 #endif
