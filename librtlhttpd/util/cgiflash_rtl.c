@@ -91,7 +91,7 @@ void write_buffer(UploadState_t* state)
 			while (tmp <= lastBlock) {
 				if (tmp != state->erasedAddress)
 				{
-					debug_printf("-E: %x\t1000\n", tmp);
+					dbg("-E: %x\t1000", tmp);
 					if (!locked) {
 						device_mutex_lock(RT_DEV_LOCK_FLASH);
 						locked=1;
@@ -106,13 +106,13 @@ void write_buffer(UploadState_t* state)
 		if (!locked)
 			device_mutex_lock(RT_DEV_LOCK_FLASH);
 		if ((vLen & 3)==0) {
-			debug_printf("PA: %x\t%x\t%x\n", vAddr, vLen, state->currentAddress);
+			dbg("PA: %x\t%x\t%x", vAddr, vLen, state->currentAddress);
 			// aligned multi-page write (fast)
 			flash_burst_write(&flashobj, vAddr, vLen,
 					state->pageData + (vAddr - state->currentAddress));
 		}
 		else {
-			debug_printf("PU: %x\t%x\t%x\n", vAddr, vLen, state->currentAddress);
+			dbg("PU: %x\t%x\t%x", vAddr, vLen, state->currentAddress);
 			// unaligned multi-page write (slow)
 			flash_stream_write(&flashobj, vAddr, vLen,
 					state->pageData + (vAddr - state->currentAddress));
@@ -120,7 +120,7 @@ void write_buffer(UploadState_t* state)
 		device_mutex_unlock(RT_DEV_LOCK_FLASH);
 	}
 	else
-		debug_printf("--: %x\n", state->currentAddress);
+		dbg("--: %x", state->currentAddress);
 	state->currentAddress+=state->pagePos;
 	state->pagePos=0;
 }
@@ -130,7 +130,7 @@ void write_buffer(UploadState_t* state)
 
 int cgiUploadFirmware(HttpdConnData *connData)
 {
-//	CgiUploadFlashRtl_t *def=(CgiUploadFlashRtl_t*)connData->cgiArg;
+	CgiUploadFlashRtl_t *def=(CgiUploadFlashRtl_t*)connData->cgiArg;
 	UploadState_t *state=(UploadState_t *)connData->cgiData;
 
 	uint8_t *data;
@@ -144,10 +144,10 @@ int cgiUploadFirmware(HttpdConnData *connData)
 
 	if (state==NULL) {
 		//First call. Allocate and initialize state variable.
-		info_printf("Firmware upload cgi start.\n");
+		dbg("Firmware upload cgi start.");
 		state=malloc(sizeof(UploadState_t));
 		if (state==NULL) {
-			error_printf("Can't allocate firmware upload struct!\n");
+			httpd_error("Can't allocate firmware upload struct!");
 			return HTTPD_CGI_DONE;
 		}
 		memset(state, 0, sizeof(UploadState_t));
@@ -161,11 +161,11 @@ int cgiUploadFirmware(HttpdConnData *connData)
 
 	while (dataLen!=0) {
 		if (state->state==FLST_START) {
-			info_printf("POST Header length: %d\n", connData->priv->headPos);
+			dbg("POST Header length: %d", connData->priv->headPos);
 			for (int d=0; d<= connData->priv->headPos; d++)
 			{
 				if (connData->priv->head[d]!=0x00)
-					debug_printf("%c", connData->priv->head[d]);
+					httpd_printf("%c", connData->priv->head[d]);
 				//else
 				//	DiagPrintf("\n");
 			}
@@ -178,8 +178,8 @@ int cgiUploadFirmware(HttpdConnData *connData)
 			state->autoErase = atoi(b) & 255;
 			httpdGetHeader(connData, "Content-Length", b, 20);
 			state->len = atoi(b);
-			info_printf("Start address=%d\t", state->currentAddress);
-			info_printf("Length=%d\tErase=%d\n", state->len, state->autoErase);
+			dbg("Start address=%d", state->currentAddress);
+			dbg("Length=%d\tErase=%d", state->len, state->autoErase);
 			if (state->len ==0)
 				return HTTPD_CGI_DONE;
 
@@ -191,7 +191,7 @@ int cgiUploadFirmware(HttpdConnData *connData)
 		} else if (state->state==FLST_WRITE) {
 			int32_t lenLeft= PAGELEN - state->pagePos;   // free space in page buffer
 			if (state->len < lenLeft) {
-				info_printf("Last buffer\n");
+				dbg("Last buffer");
 				lenLeft=state->len; //last buffer can be a cut-off one
 			}
 			//See if we need to write the page.
@@ -216,19 +216,19 @@ int cgiUploadFirmware(HttpdConnData *connData)
 				state->state=FLST_DONE;
 
 		} else if (state->state==FLST_DONE) {
-			info_printf("Huh? %d bogus bytes received after data received.\n", dataLen);
+			warn("Huh? %d bogus bytes received after data received.", dataLen);
 			//Ignore those bytes.
 			dataLen=0;
 		} else if (state->state==FLST_ERROR) {
 			//Just eat up any bytes we receive.
-			error_printf("FLST_ERROR\n");
+			httpd_error("FLST_ERROR");
 			dataLen=0;
 		}
 	}
 
 	if (connData->post->len==connData->post->received) {
 			//We're done! Format a response.
-			info_printf("Upload done. Sending response.\n");
+			info("Upload done. Sending response.");
 			httpdStartResponse(connData, state->state==FLST_ERROR?400:200);
 			httpdHeader(connData, "Content-Type", "text/plain");
 			httpdEndHeaders(connData);
@@ -247,7 +247,7 @@ int cgiUploadFirmware(HttpdConnData *connData)
 
 int cgiRebootFirmware(HttpdConnData *connData)
 {
-	DiagPrintf("Resetting...\n");
+	warn("Resetting...");
 
 	// boot from flash
 	HAL_WRITE32(SYSTEM_CTRL_BASE, 0x210, 0x211157); 	//mww 0x40000210 0x211157
@@ -257,7 +257,7 @@ int cgiRebootFirmware(HttpdConnData *connData)
 
 	// Set processor clock to default before system reset
 	HAL_WRITE32(SYSTEM_CTRL_BASE, 0x14, 0x00000021);
-	osDelay(10);
+	osDelay(50);
 	// Cortex-M3 SCB->AIRCR
 	HAL_WRITE32(0xE000ED00, 0x0C, (0x5FA << 16) |                             // VECTKEY
 	                              (HAL_READ32(0xE000ED00, 0x0C) & (7 << 8)) | // PRIGROUP

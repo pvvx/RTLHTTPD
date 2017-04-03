@@ -12,14 +12,14 @@ HTTP auth implementation. Only does basic authentication for now.
  */
 
 
+//#include <esp8266.h>
 #include <stdint.h>
 #include <string.h>
 #include "platform.h"
-
 #include "auth.h"
-#include "polarssl/base64.h"
+#include "base64.h"
 
-int ICACHE_FLASH_ATTR authBasic(HttpdConnData *connData) {
+httpd_cgi_state ICACHE_FLASH_ATTR authBasic(HttpdConnData *connData) {
 	const char *forbidden="401 Forbidden.";
 	int no=0;
 	int r;
@@ -34,11 +34,10 @@ int ICACHE_FLASH_ATTR authBasic(HttpdConnData *connData) {
 
 	r=httpdGetHeader(connData, "Authorization", hdr, sizeof(hdr));
 	if (r && strncmp(hdr, "Basic", 5)==0) {
-		size_t upass_size = sizeof(userpass);
-		r = base64_decode((unsigned char *)userpass, &upass_size, (const unsigned char *) hdr+6, strlen(hdr)-6);
+		r=base64_decode(strlen(hdr)-6, hdr+6, sizeof(userpass), (unsigned char *)userpass);
 		if (r<0) r=0; //just clean out string on decode error
 		userpass[r]=0; //zero-terminate user:pass string
-		info_printf("Auth: %s\n", userpass);
+//		printf("Auth: %s\n", userpass);
 		while (((AuthGetUserPw)(connData->cgiArg))(connData, no,
 				user, AUTH_MAX_USER_LEN, pass, AUTH_MAX_PASS_LEN)) {
 			//Check user/pass against auth header

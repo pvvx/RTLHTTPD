@@ -3,7 +3,6 @@
  */
 
 #include "platform_autoconf.h"
-#include "platform_opts.h"
 #include "autoconf.h"
 #include "FreeRTOS.h"
 #include "task.h"

@@ -1,6 +1,5 @@
 #ifndef CAPTDNS_H
 #define CAPTDNS_H
-
-void captdnsInit(void);
+void ICACHE_FLASH_ATTR captdnsInit(void);
 
 #endif

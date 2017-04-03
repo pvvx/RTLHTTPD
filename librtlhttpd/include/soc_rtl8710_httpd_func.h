@@ -35,7 +35,7 @@ typedef int8_t  int8;*/
 
 SpiFlashOpResult spi_flash_read(uint32_t src_addr, uint32_t *des_addr, uint32_t size);
 
-int wifi_get_ip_info(uint32_t dummy, struct ip_info *info);
+void wifi_get_ip_info(uint32_t dummy, struct ip_info *info);
 
 
 #endif /* ESPFS_RTL_FLASH_WRAPPER_H_ */

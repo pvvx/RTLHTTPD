@@ -18,15 +18,33 @@
 
 
 
+
+inline char __httpd_tolower(const char c)
+{
+	return c | 0x20;
+}
+
+int __httpd_strcasecmp(const char *s1, const char *s2)
+{
+    const unsigned char *us1 = (const unsigned char *)s1;
+    const unsigned char *us2 = (const unsigned char *)s2;
+
+    while (__httpd_tolower(*us1) == __httpd_tolower(*us2)) {
+            if (*us1++ == '\0')
+                    return (0);
+            us2++;
+    }
+return (__httpd_tolower(*us1) - __httpd_tolower(*us2));
+}
+
+
 /* src_addr and size 4-byte aligned
  * (SpicUserReadRtl8195A - unaligned read is broken)
  */
 SpiFlashOpResult spi_flash_read(uint32_t src_addr, uint32_t *des_addr, uint32_t size)
 {
-#if	CONFIG_DEBUG_LOG > 4
-	DiagPrintf("spi_flash_read(%p, %p, %d)\n", src_addr, des_addr, size);
-#endif
 	device_mutex_lock(RT_DEV_LOCK_FLASH);
+
 	flash_burst_read(&flashobj, src_addr, size, (uint8_t *)des_addr);
 	//flash_stream_read(&flashobj, src_addr, size, (uint8_t *)des_addr);
 
@@ -40,7 +58,7 @@ SpiFlashOpResult spi_flash_read(uint32_t src_addr, uint32_t *des_addr, uint32_t 
 extern rtw_mode_t wifi_mode;
 extern struct netif xnetif[NET_IF_NUM];
 
-wifi_get_ip_info(uint32_t dummy, struct ip_info *info)
+void wifi_get_ip_info(uint32_t dummy, struct ip_info *info)
 {
 	u8_t num=0;
 	int devnum = 0;

@@ -4,26 +4,22 @@ ESP8266 web server - platform-dependent routines, FreeRTOS version
 
 Thanks to my collague at Espressif for writing the foundations of this code.
 */
+//#ifdef FREERTOS
 
-#ifndef HTTPD_MAX_CONNECTIONS
-#define HTTPD_MAX_CONNECTIONS 5
-#endif
 
-#define ICACHE_FLASH_ATTR
+//#include <esp8266.h>
+
 #include <stdint.h>
 #include <string.h>
 
-#include "platform.h"
 #include "httpd.h"
 #include "httpd-platform.h"
-#include "task.h"
+
 #include "queue.h"
 #include "semphr.h"
 
 #include "sockets.h"
-#ifndef HTTPD_STACKSIZE
-#define HTTPD_STACKSIZE 2400
-#endif
+
 
 static int httpPort;
 static int httpMaxConnCt;
@@ -64,7 +60,7 @@ void ICACHE_FLASH_ATTR httpdPlatUnlock() {
 }
 
 
-#define RECV_BUF_SIZE (2*TCP_MSS) //2048
+#define RECV_BUF_SIZE 2048
 static void platHttpServerTask(void *pvParameters) {
 	int32 listenfd;
 	int32 remotefd;
@@ -96,7 +92,7 @@ static void platHttpServerTask(void *pvParameters) {
 	do{
 		listenfd = socket(AF_INET, SOCK_STREAM, 0);
 		if (listenfd == -1) {
-			error_printf("platHttpServerTask: failed to create sock!\n");
+			httpd_error("platHttpServerTask: failed to create sock!");
 			vTaskDelay(1000/portTICK_RATE_MS);
 		}
 	} while(listenfd == -1);
@@ -105,7 +101,7 @@ static void platHttpServerTask(void *pvParameters) {
 	do{
 		ret = bind(listenfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
 		if (ret != 0) {
-			error_printf("platHttpServerTask: failed to bind!\n");
+			httpd_error("platHttpServerTask: failed to bind!");
 			vTaskDelay(1000/portTICK_RATE_MS);
 		}
 	} while(ret != 0);
@@ -114,13 +110,13 @@ static void platHttpServerTask(void *pvParameters) {
 		/* Listen to the local connection */
 		ret = listen(listenfd, HTTPD_MAX_CONNECTIONS);
 		if (ret != 0) {
-			error_printf("platHttpServerTask: failed to listen!\n");
+			httpd_error("platHttpServerTask: failed to listen!");
 			vTaskDelay(1000/portTICK_RATE_MS);
 		}
 		
 	} while(ret != 0);
 	
-	info_printf("esphttpd: active and listening to connections.\n");
+	info("esphttpd: active and listening to connections.");
 	while(1){
 		// clear fdset, and set the select function wait time
 		int socketsFull=1;
@@ -153,12 +149,13 @@ static void platHttpServerTask(void *pvParameters) {
 				len=sizeof(struct sockaddr_in);
 				remotefd = accept(listenfd, (struct sockaddr *)&remote_addr, (socklen_t *)&len);
 				if (remotefd<0) {
-					warning_printf("platHttpServerTask: Huh? Accept failed.\n");
+					warn("platHttpServerTask: Huh? Accept failed.");
 					continue;
 				}
 				for(x=0; x<HTTPD_MAX_CONNECTIONS; x++) if (rconn[x].fd==-1) break;
 				if (x==HTTPD_MAX_CONNECTIONS) {
-					warning_printf("platHttpServerTask: Huh? Got accept with all slots full.\n");
+					warn("platHttpServerTask: Huh? Got accept with all slots full.");
+					close(remotefd);
 					continue;
 				}
 				int keepAlive = 1; //enable keepalive
@@ -186,7 +183,7 @@ static void platHttpServerTask(void *pvParameters) {
 				//os_timer_disarm(&connData[x].conn->stop_watch);
 				//os_timer_setfn(&connData[x].conn->stop_watch, (os_timer_func_t *)httpserver_conn_watcher, connData[x].conn);
 				//os_timer_arm(&connData[x].conn->stop_watch, STOP_TIMER, 0);
-				info_printf("httpserver acpt index %d sockfd %d!\n", x, remotefd);
+				dbg("httpserver acpt index %d sockfd %d!", x, remotefd);
 			}
 			
 			//See if anything happened on the existing connections.
@@ -200,9 +197,12 @@ static void platHttpServerTask(void *pvParameters) {
 					rconn[x].needWriteDoneNotif=0; //Do this first, httpdSentCb may write something making this 1 again.
 					if (rconn[x].needsClose) {
 						//Do callback and close fd.
+						info("Stack size=%d", uxTaskGetStackHighWaterMark(NULL));
+
 						httpdDisconCb(&rconn[x], rconn[x].ip, rconn[x].port);
 						close(rconn[x].fd);
 						rconn[x].fd=-1;
+
 						   continue;  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 					} else {
 						httpdSentCb(&rconn[x], rconn[x].ip, rconn[x].port);
@@ -211,12 +211,8 @@ static void platHttpServerTask(void *pvParameters) {
 
 				if (FD_ISSET(rconn[x].fd, &readset)) {
 					precvbuf=(char*)malloc(RECV_BUF_SIZE);
-#if CONFIG_DEBUG_LOG > 4
-					debug_printf("precvbuf = %p\n", precvbuf);
-#endif				
-					
 					if (precvbuf==NULL) {
-						error_printf("platHttpServerTask: memory exhausted!\n");
+						httpd_error("platHttpServerTask: memory exhausted!");
 						httpdDisconCb(&rconn[x], rconn[x].ip, rconn[x].port);
 						close(rconn[x].fd);
 						rconn[x].fd=-1;
@@ -232,6 +228,7 @@ static void platHttpServerTask(void *pvParameters) {
 						rconn[x].fd=-1;
 					}
 					if (precvbuf) free(precvbuf);
+					info("Stack size=%d", uxTaskGetStackHighWaterMark(NULL));
 				}
 			}
 		}
@@ -265,6 +262,12 @@ static void platHttpServerTask(void *pvParameters) {
 void ICACHE_FLASH_ATTR httpdPlatInit(int port, int maxConnCt) {
 	httpPort=port;
 	httpMaxConnCt=maxConnCt;
-	xTaskCreate(platHttpServerTask, (const signed char *)"esphttpd", HTTPD_STACKSIZE, NULL, HTTPD_PRIORITY, NULL);
+#ifdef ESP32
+	xTaskCreate(platHttpServerTask, (const char *)"esphttpd", HTTPD_STACKSIZE, NULL, 4, NULL);
+#else
+	xTaskCreate(platHttpServerTask, (const signed char *)"esphttpd", HTTPD_STACKSIZE, NULL, 4, NULL);
+#endif
 }
 
+
+//#endif

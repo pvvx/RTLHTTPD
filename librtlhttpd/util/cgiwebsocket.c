@@ -17,10 +17,10 @@ Websocket support for esphttpd. Inspired by https://github.com/dangrie158/ESP-82
 #include <stdint.h>
 #include <string.h>
 #include "platform.h"
+
 #include "hal_crypto.h"
-#include "polarssl/base64.h"
+#include "../core/base64.h"
 #include "cgiwebsocket.h"
-#include "platform.h"
 
 #define WS_KEY_IDENTIFIER "Sec-WebSocket-Key: "
 #define WS_GUID "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
@@ -108,15 +108,22 @@ static int ICACHE_FLASH_ATTR sendFrameHead(Websock *ws, int opcode, int len) {
 	} else {
 		buf[i++]=len;
 	}
-	info_printf("WS: Sent frame head for payload of %d bytes.\n", len);
+	//dbg("WS: Sent frame head for payload of %d bytes.", len);
 	return httpdSend(ws->conn, buf, i);
 }
 
 int ICACHE_FLASH_ATTR cgiWebsocketSend(Websock *ws, char *data, int len, int flags) {
 	int r=0;
 	int fl=0;
-	if (flags&WEBSOCK_FLAG_BIN) fl=OPCODE_BINARY; else fl=OPCODE_TEXT;
-	if (!(flags&WEBSOCK_FLAG_CONT)) fl|=FLAG_FIN;
+	// Continuation frame has opcode 0
+	if (!(flags&WEBSOCK_FLAG_CONT)) {
+		if (flags & WEBSOCK_FLAG_BIN)
+			fl = OPCODE_BINARY;
+		else
+			fl = OPCODE_TEXT;
+	}
+	// add FIN to last frame
+	if (!(flags&WEBSOCK_FLAG_MORE)) fl|=FLAG_FIN;
 	sendFrameHead(ws, fl, len);
 	if (len!=0) r=httpdSend(ws->conn, data, len);
 	httpdFlushSendBuffer(ws->conn);
@@ -150,7 +157,7 @@ void ICACHE_FLASH_ATTR cgiWebsocketClose(Websock *ws, int reason) {
 
 
 static void ICACHE_FLASH_ATTR websockFree(Websock *ws) {
-	debug_printf("Ws: Free\n");
+	dbg("Ws: Free");
 	if (ws->closeCb) ws->closeCb(ws);
 	//Clean up linked list
 	if (llStart==ws) {
@@ -164,13 +171,13 @@ static void ICACHE_FLASH_ATTR websockFree(Websock *ws) {
 	if (ws->priv) free(ws->priv);
 }
 
-int ICACHE_FLASH_ATTR cgiWebSocketRecv(HttpdConnData *connData, char *data, int len) {
+httpd_cgi_state ICACHE_FLASH_ATTR cgiWebSocketRecv(HttpdConnData *connData, char *data, int len) {
 	int i, j, sl;
-	int r=HTTPD_CGI_MORE;
+	httpd_cgi_state r=HTTPD_CGI_MORE;
 	int wasHeaderByte;
 	Websock *ws=(Websock*)connData->cgiData;
 	for (i=0; i<len; i++) {
-//		httpd_printf("Ws: State %d byte 0x%02X\n", ws->priv->wsStatus, data[i]);
+//		dbg("Ws: State %d byte 0x%02X\n", ws->priv->wsStatus, data[i]);
 		wasHeaderByte=1;
 		if (ws->priv->wsStatus==ST_FLAGS) {
 			ws->priv->maskCtr=0;
@@ -213,7 +220,7 @@ int ICACHE_FLASH_ATTR cgiWebSocketRecv(HttpdConnData *connData, char *data, int 
 			//received here at the same time; no more byte iterations till the end of this frame.
 			//First, unmask the data
 			sl=len-i;
-			debug_printf("Ws: Frame payload. wasHeaderByte %d fr.len %d sl %d cmd 0x%x\n", wasHeaderByte, (int)ws->priv->fr.len, (int)sl, ws->priv->fr.flags);
+			dbg("Ws: Frame payload. wasHeaderByte %d fr.len %d sl %d cmd 0x%x", wasHeaderByte, (int)ws->priv->fr.len, (int)sl, ws->priv->fr.flags);
 			if (sl > ws->priv->fr.len) sl=ws->priv->fr.len;
 			for (j=0; j<sl; j++) data[i+j]^=(ws->priv->fr.mask[(ws->priv->maskCtr++)&3]);
 
@@ -243,19 +250,19 @@ int ICACHE_FLASH_ATTR cgiWebSocketRecv(HttpdConnData *connData, char *data, int 
 				} else {
 					int flags=0;
 					if ((ws->priv->fr.flags&OPCODE_MASK)==OPCODE_BINARY) flags|=WEBSOCK_FLAG_BIN;
-					if ((ws->priv->fr.flags&FLAG_FIN)==0) flags|=WEBSOCK_FLAG_CONT;
+					if ((ws->priv->fr.flags&FLAG_FIN)==0) flags|=WEBSOCK_FLAG_MORE;
 					if (ws->recvCb) ws->recvCb(ws, data+i, sl, flags);
 				}
 			} else if ((ws->priv->fr.flags&OPCODE_MASK)==OPCODE_CLOSE) {
-				info_printf("WS: Got close frame\n");
+				dbg("WS: Got close frame");
 				if (!ws->priv->closedHere) {
-					httpd_printf("WS: Sending response close frame\n");
+					dbg("WS: Sending response close frame");
 					cgiWebsocketClose(ws, ((data[i]<<8)&0xff00)+(data[i+1]&0xff));
 				}
 				r=HTTPD_CGI_DONE;
 				break;
 			} else {
-				if (!ws->priv->frameCont) warning_printf("WS: Unknown opcode 0x%X\n", ws->priv->fr.flags&OPCODE_MASK);
+				if (!ws->priv->frameCont) httpd_error("WS: Unknown opcode 0x%X", ws->priv->fr.flags&OPCODE_MASK);
 			}
 			i+=sl-1;
 			ws->priv->fr.len-=sl;
@@ -277,14 +284,14 @@ int ICACHE_FLASH_ATTR cgiWebSocketRecv(HttpdConnData *connData, char *data, int 
 }
 
 //Websocket 'cgi' implementation
-int ICACHE_FLASH_ATTR cgiWebsocket(HttpdConnData *connData) {
+httpd_cgi_state ICACHE_FLASH_ATTR cgiWebsocket(HttpdConnData *connData) {
 	char buff[256];
 	int i;
-	uint8_t sha1_digest[CRYPTO_SHA1_DIGEST_LENGTH];  // 20
+	uint8_t sha1_digest[20];  //sha1nfo s;
 
 	if (connData->conn==NULL) {
 		//Connection aborted. Clean up.
-		debug_printf("WS: Cleanup\n");
+		dbg("WS: Cleanup");
 		if (connData->cgiData) {
 			Websock *ws=(Websock*)connData->cgiData;
 			websockFree(ws);
@@ -295,26 +302,26 @@ int ICACHE_FLASH_ATTR cgiWebsocket(HttpdConnData *connData) {
 	}
 	
 	if (connData->cgiData==NULL) {
-		debug_printf("WS: First call\n");
+		dbg("WS: First call\n");
 		//First call here. Check if client headers are OK, send server header.
 		i=httpdGetHeader(connData, "Upgrade", buff, sizeof(buff)-1);
-		debug_printf("WS: Upgrade: %s\n", buff);
-		if (i && strcasecmp(buff, "websocket")==0) {
+		dbg("WS: Upgrade: %s", buff);
+		if (i && httpd_strcasecmp(buff, "websocket")==0) {
 			i=httpdGetHeader(connData, "Sec-WebSocket-Key", buff, sizeof(buff)-1);
 			if (i) {
-				debug_printf("WS: Key: %s\n", buff);
+				httpd_printf("WS: Key: %s\n", buff);
 				//Seems like a WebSocket connection.
 				// Alloc structs
 				connData->cgiData=malloc(sizeof(Websock));
 				if (connData->cgiData==NULL) {
-					error_printf("Can't allocate mem for websocket\n");
+					httpd_error("Can't allocate mem for websocket");
 					return HTTPD_CGI_DONE;
 				}
 				memset(connData->cgiData, 0, sizeof(Websock));
 				Websock *ws=(Websock*)connData->cgiData;
 				ws->priv=malloc(sizeof(WebsockPriv));
 				if (ws->priv==NULL) {
-					error_printf("Can't allocate mem for websocket priv\n");
+					httpd_error("Can't allocate mem for websocket priv");
 					free(connData->cgiData);
 					connData->cgiData=NULL;
 					return HTTPD_CGI_DONE;
@@ -332,10 +339,7 @@ int ICACHE_FLASH_ATTR cgiWebsocket(HttpdConnData *connData) {
 				httpdStartResponse(connData, 101);
 				httpdHeader(connData, "Upgrade", "websocket");
 				httpdHeader(connData, "Connection", "upgrade");
-				{
-					size_t size_buff = sizeof(buff);
-					base64_encode((unsigned char *)buff, &size_buff , (unsigned char*)sha1_digest, CRYPTO_SHA1_DIGEST_LENGTH);
-				}
+				base64_encode_esphttpd(20, /*sha1_result(&s)*/sha1_digest, sizeof(buff), buff);
 				httpdHeader(connData, "Sec-WebSocket-Accept", buff);
 				httpdEndHeaders(connData);
 				//Set data receive handler

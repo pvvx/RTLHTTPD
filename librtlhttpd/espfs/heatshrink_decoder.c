@@ -14,7 +14,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "soc_rtl8710_httpd_func.h"
-#include "FreeRTOS.h"
 #endif
 
 #include "heatshrink_config_custom.h"

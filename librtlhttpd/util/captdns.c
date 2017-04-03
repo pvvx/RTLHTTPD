@@ -187,7 +187,7 @@ static void ICACHE_FLASH_ATTR captdnsRecv(struct sockaddr_in *premote_addr, char
 	DnsHeader *hdr=(DnsHeader*)p;
 	DnsHeader *rhdr=(DnsHeader*)&reply[0];
 	p+=sizeof(DnsHeader);
-//	debug_printf("DNS packet: id 0x%X flags 0x%X rcode 0x%X qcnt %d ancnt %d nscount %d arcount %d len %d\n",
+//	dbg("DNS packet: id 0x%X flags 0x%X rcode 0x%X qcnt %d ancnt %d nscount %d arcount %d len %d",
 //		my_ntohs(&hdr->id), hdr->flags, hdr->rcode, my_ntohs(&hdr->qdcount), my_ntohs(&hdr->ancount), my_ntohs(&hdr->nscount), my_ntohs(&hdr->arcount), length);
 	//Some sanity checks:
 	if (length>DNS_LEN) return; 								//Packet is longer than DNS implementation allows
@@ -203,7 +203,7 @@ static void ICACHE_FLASH_ATTR captdnsRecv(struct sockaddr_in *premote_addr, char
 		if (p==NULL) return;
 		DnsQuestionFooter *qf=(DnsQuestionFooter*)p;
 		p+=sizeof(DnsQuestionFooter);
-//		info_printf("DNS: Q (type 0x%X class 0x%X) for %s\n", my_ntohs(&qf->type), my_ntohs(&qf->class), buff);
+		info("DNS: Q (type 0x%X class 0x%X) for %s", my_ntohs(&qf->type), my_ntohs(&qf->class), buff);
 		if (my_ntohs(&qf->type)==QTYPE_A) {
 			//They want to know the IPv4 address of something.
 			//Build the response.
@@ -223,7 +223,7 @@ static void ICACHE_FLASH_ATTR captdnsRecv(struct sockaddr_in *premote_addr, char
 			*rend++=ip4_addr3(&info.ip);
 			*rend++=ip4_addr4(&info.ip);
 			setn16(&rhdr->ancount, my_ntohs(&rhdr->ancount)+1);
-//			debug_printf("Added A rec to resp. Resp len is %d\n", (rend-reply));
+//			httpd_printf("Added A rec to resp. Resp len is %d\n", (rend-reply));
 		} else if (my_ntohs(&qf->type)==QTYPE_NS) {
 			//Give ns server. Basically can be whatever we want because it'll get resolved to our IP later anyway.
 			rend=strToLabel(buff, rend, sizeof(reply)-(rend-reply)); //Add the label
@@ -238,7 +238,7 @@ static void ICACHE_FLASH_ATTR captdnsRecv(struct sockaddr_in *premote_addr, char
 			*rend++='s';
 			*rend++=0;
 			setn16(&rhdr->ancount, my_ntohs(&rhdr->ancount)+1);
-//			debug_printf("Added NS rec to resp. Resp len is %d\n", (rend-reply));
+//			httpd_printf("Added NS rec to resp. Resp len is %d\n", (rend-reply));
 		} else if (my_ntohs(&qf->type)==QTYPE_URI) {
 			//Give uri to us
 			rend=strToLabel(buff, rend, sizeof(reply)-(rend-reply)); //Add the label
@@ -255,7 +255,7 @@ static void ICACHE_FLASH_ATTR captdnsRecv(struct sockaddr_in *premote_addr, char
 			memcpy(rend, "http://rtl.nonet", 16);
 			rend+=16;
 			setn16(&rhdr->ancount, my_ntohs(&rhdr->ancount)+1);
-//			debug_printf("Added NS rec to resp. Resp len is %d\n", (rend-reply));
+//			httpd_printf("Added NS rec to resp. Resp len is %d\n", (rend-reply));
 		}
 	}
 	//Send the response
@@ -280,18 +280,20 @@ static void captdnsTask(void *pvParameters) {
 	socklen_t fromlen;
 	struct ip_info ipconfig;
 	char udp_msg[DNS_LEN];
+
 	
-	memset(&ipconfig, 0, sizeof(ipconfig));
+	wifi_get_ip_info(0, &ipconfig);
+	//memset(&ipconfig, 0, sizeof(ipconfig));
 	memset(&server_addr, 0, sizeof(server_addr));
 	server_addr.sin_family = AF_INET;	   
-	server_addr.sin_addr.s_addr = INADDR_ANY;
+	server_addr.sin_addr.s_addr = ipconfig.ip.addr; //INADDR_ANY;
 	server_addr.sin_port = htons(53);
 	server_addr.sin_len = sizeof(server_addr);
 	
 	do {
 		sockFd=socket(AF_INET, SOCK_DGRAM, 0);
 		if (sockFd==-1) {
-			error_printf("captdns_task failed to create sock!\n");
+			httpd_error("captdns_task failed to create sock!");
 			vTaskDelay(1000/portTICK_RATE_MS);
 		}
 	} while (sockFd==-1);
@@ -299,12 +301,12 @@ static void captdnsTask(void *pvParameters) {
 	do {
 		ret=bind(sockFd, (struct sockaddr *)&server_addr, sizeof(server_addr));
 		if (ret!=0) {
-			error_printf("captdns_task failed to bind sock!\n");
+			httpd_error("captdns_task failed to bind sock!");
 			vTaskDelay(1000/portTICK_RATE_MS);
 		}
 	} while (ret!=0);
 
-	info_printf("CaptDNS inited.\n");
+	info("CaptDNS inited.");
 	while(1) {
 		memset(&from, 0, sizeof(from));
 		fromlen=sizeof(struct sockaddr_in);
@@ -317,7 +319,12 @@ static void captdnsTask(void *pvParameters) {
 }
 
 void captdnsInit(void) {
+#ifdef ESP32
+	xTaskCreate(captdnsTask, (const char *)"captdns_task", 1200, NULL, CAPDNS_PRIORITY, NULL);
+#else
+	info("Starting captive portal...");
 	xTaskCreate(captdnsTask, (const signed char *)"captdns_task", 1200, NULL, CAPDNS_PRIORITY, NULL);
+#endif
 }
 
 #else

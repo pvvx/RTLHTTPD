@@ -13,6 +13,7 @@ endif
 CC=gcc
 
 OBJS=main.o heatshrink_encoder.o
+
 TARGET=mkespfsimage
 
 $(TARGET): $(OBJS)

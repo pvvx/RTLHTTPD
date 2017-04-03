@@ -4,12 +4,13 @@
  *  Created on: Feb 16, 2017
  *      Author: sharikov
  */
-
 #ifndef WC_MGR_H_
 #define WC_MGR_H_
 
+#define FREERTOS
+#define HTTPD_MAX_CONNECTIONS 15
+
 #define WIFI_RESET_SETTINGS_PIN PB_1 // wifi settings reset: connect PB1 to ground
-#define BITBAND_RSKEY 	BITBAND_B1
 
 #define GPIO_LED_PIN       PA_4
 #define BITBAND_LED 	BITBAND_A4

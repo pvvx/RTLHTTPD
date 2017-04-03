@@ -1,4 +1,5 @@
-all:
-	gcc -o mkupgimg mkupgimg.c -s
+mkupgimg: mkupgimg.c
+	$(CC) -o $@ $^
+
 clean:
 	rm -f mkupgimg
