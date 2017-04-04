@@ -50,8 +50,8 @@ test:
 	#@make -f flasher.mk test 
 
 readfullflash:
-	JLink-RdFullFlash.bat
-	#@make -f flasher.mk readfullflash 
+	#JLink-RdFullFlash.bat
+	@$(MAKE) -f flasher.mk readfullflash 
 
 .PHONY:	prerequirement
 prerequirement:
