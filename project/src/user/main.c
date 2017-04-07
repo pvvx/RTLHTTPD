@@ -10,7 +10,6 @@
 #include "hal_crypto.h"
 #include "hal_log_uart.h"
 #include "hal_misc.h"
-#include "atcmd_user.h"
 #include "diag.h"
 //#include "wdt_api.h"
 //#include <osdep_service.h>

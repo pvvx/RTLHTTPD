@@ -195,7 +195,7 @@ SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/efuse_api.c
 SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/flash_api.c
 SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/gpio_api.c
 SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/gpio_irq_api.c
-#SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/i2c_api.c
+SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/i2c_api.c
 SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/i2s_api.c
 #SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/log_uart_api.c
 #SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/nfc_api.c
@@ -207,7 +207,7 @@ SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/pinmap_common.c
 SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/serial_api.c
 SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/sleep.c
 #SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/spdio_api.c
-#SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/spi_api.c
+SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/spi_api.c
 SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/sys_api.c
 SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/timer_api.c
 SRC_C += sdk/component/common/mbed/targets/hal/rtl8195a/us_ticker.c
@@ -220,14 +220,14 @@ SRC_C += sdk/component/soc/realtek/8195a/fwlib/src/hal_32k.c
 SRC_C += sdk/component/soc/realtek/8195a/fwlib/src/hal_adc.c
 SRC_C += sdk/component/soc/realtek/8195a/fwlib/src/hal_gdma.c
 SRC_C += sdk/component/soc/realtek/8195a/fwlib/src/hal_gpio.c
-#SRC_C += sdk/component/soc/realtek/8195a/fwlib/src/hal_i2c.c
+SRC_C += sdk/component/soc/realtek/8195a/fwlib/src/hal_i2c.c
 SRC_C += sdk/component/soc/realtek/8195a/fwlib/src/hal_i2s.c
 #SRC_C += sdk/component/soc/realtek/8195a/fwlib/src/hal_mii.c
 #SRC_C += sdk/component/soc/realtek/8195a/fwlib/src/hal_nfc.c
 #SRC_C += sdk/component/soc/realtek/8195a/fwlib/src/hal_pcm.c
 #SRC_C += sdk/component/soc/realtek/8195a/fwlib/src/hal_pwm.c
 #SRC_C += sdk/component/soc/realtek/8195a/fwlib/src/hal_sdr_controller.c
-#SRC_C += sdk/component/soc/realtek/8195a/fwlib/src/hal_ssi.c
+SRC_C += sdk/component/soc/realtek/8195a/fwlib/src/hal_ssi.c
 SRC_C += sdk/component/soc/realtek/8195a/fwlib/src/hal_timer.c
 SRC_C += sdk/component/soc/realtek/8195a/fwlib/src/hal_uart.c
 
@@ -238,12 +238,12 @@ SRC_C += sdk/component/os/freertos/freertos_pmu.c
 SRC_C += sdk/component/soc/realtek/8195a/fwlib/rtl8195a/src/rtl8195a_adc.c
 SRC_C += sdk/component/soc/realtek/8195a/fwlib/rtl8195a/src/rtl8195a_gdma.c
 SRC_C += sdk/component/soc/realtek/8195a/fwlib/rtl8195a/src/rtl8195a_gpio.c
-#SRC_C += sdk/component/soc/realtek/8195a/fwlib/rtl8195a/src/rtl8195a_i2c.c
+SRC_C += sdk/component/soc/realtek/8195a/fwlib/rtl8195a/src/rtl8195a_i2c.c
 SRC_C += sdk/component/soc/realtek/8195a/fwlib/rtl8195a/src/rtl8195a_i2s.c
 #SRC_C += sdk/component/soc/realtek/8195a/fwlib/rtl8195a/src/rtl8195a_mii.c
 #SRC_C += sdk/component/soc/realtek/8195a/fwlib/rtl8195a/src/rtl8195a_nfc.c
 #SRC_C += sdk/component/soc/realtek/8195a/fwlib/rtl8195a/src/rtl8195a_pwm.c
-#SRC_C += sdk/component/soc/realtek/8195a/fwlib/rtl8195a/src/rtl8195a_ssi.c
+SRC_C += sdk/component/soc/realtek/8195a/fwlib/rtl8195a/src/rtl8195a_ssi.c
 SRC_C += sdk/component/soc/realtek/8195a/fwlib/rtl8195a/src/rtl8195a_timer.c
 SRC_C += sdk/component/soc/realtek/8195a/fwlib/rtl8195a/src/rtl8195a_uart.c
 
@@ -394,20 +394,21 @@ ADD_SRC_C += sdk/component/common/api/wifi_api.c
 #=============================================
 # PROJECT
 #=============================================
+INCLUDES += project/inc/user
 # openocd freertos helper
 ADD_SRC_C += project/src/FreeRTOS-openocd.c
 #user main
 ADD_SRC_C += project/src/user/main.c
 ADD_SRC_C += project/src/user/user_init.c
-ADD_SRC_C += project/src/user/wifi_console.c
-ADD_SRC_C += project/src/user/atcmd_user.c
-#ADD_SRC_C += project/src/user/test.c
-#ADD_SRC_C += project/src/user/wc_mgr.c
+#console
+ADD_SRC_C += project/src/console/atcmd_user.c
+#ADD_SRC_C += project/src/console/spi_tst.c
+ADD_SRC_C += project/src/console/wifi_console.c
+#httpd
 ADD_SRC_C += project/src/user/http_server.c
 ADD_SRC_C += project/src/user/cgi-test.c
 ADD_SRC_C += project/src/user/cgiwifi_rtl.c
-INCLUDES += project/inc/user
-
+#ADD_SRC_C += project/src/user/wc_mgr.c
 # components
 include librtlhttpd/librtlhttpd.mk
 #=============================================
