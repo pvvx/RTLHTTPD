@@ -10,7 +10,7 @@
 #define FREERTOS
 #define HTTPD_MAX_CONNECTIONS 15
 
-#define WIFI_RESET_SETTINGS_PIN PB_1 // wifi settings reset: connect PB1 to ground
+// #define WIFI_RESET_SETTINGS_PIN PB_1 // wifi settings reset: connect PB1 to ground
 
 #define GPIO_LED_PIN       PA_4
 #define BITBAND_LED 	BITBAND_A4

@@ -64,8 +64,10 @@ void user_init_thrd(void) {
 #ifdef GPIO_LED_PIN
 	GpioLedInit();
 #endif
+//	release_wakelock(15);
 
 	wifi_init();
+
 
 	_LwIP_Init();
 

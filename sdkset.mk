@@ -403,6 +403,7 @@ ADD_SRC_C += project/src/user/user_init.c
 #console
 ADD_SRC_C += project/src/console/atcmd_user.c
 #ADD_SRC_C += project/src/console/spi_tst.c
+#ADD_SRC_C += project/src/console/wlan_tst.c
 ADD_SRC_C += project/src/console/wifi_console.c
 #httpd
 ADD_SRC_C += project/src/user/http_server.c
