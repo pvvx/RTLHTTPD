@@ -123,6 +123,7 @@ int print_hex_dump(uint8_t *buf, int len, unsigned char k) {
 }
 
 extern char str_rom_hex_addr[]; // in *.ld "[Addr]   .0 .1 .2 .3 .4 .5 .6 .7 .8 .9 .A .B .C .D .E .F\n"
+
 void dump_bytes(uint32 addr, int size)
 {
 	uint8 buf[17];
@@ -181,7 +182,9 @@ LOCAL void fATSD(int argc, char *argv[])
 			argv[2] = "16";
 	}
 */
+	flash_turnon();
 	CmdDumpWord(argc-1, (unsigned char**)(argv+1));
+	SpicDisableRtl8195A();
 }
 //------------------------------------------------------------------------------
 // Write dword register
@@ -267,7 +270,7 @@ void print_tcp_pcb(void)
   rtl_printf("TIME-WAIT PCB states:\n");
   prt_none = true;
   for(pcb = tcp_tw_pcbs; pcb != NULL; pcb = pcb->next) {
-    rtl_printf("Port %d|%d\tflg:%02x\ttmr:%p\t%s\n", pcb->local_port, pcb->remote_port, pcb->flags, pcb->tmr, tcp_state_str[pcb->state]);
+    rtl_printf("Port %d|%d\tflg:%02x\ttmr:%p \t%s\n", pcb->local_port, pcb->remote_port, pcb->flags, pcb->tmr, tcp_state_str[pcb->state]);
     prt_none = false;
   };
   if(prt_none) rtl_printf("none\n");
