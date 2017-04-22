@@ -13,7 +13,6 @@ Cgi/template routines for the /wifi url.
 
 
 //#include <esp8266.h>
-#include "user_config.h"
 #include "FreeRTOS.h"
 #include "wifi_conf.h"
 #include "wifi_structures.h"

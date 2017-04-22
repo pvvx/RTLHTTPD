@@ -53,7 +53,6 @@
 /**
  * For Wlan configurations
  */
-
 #define CONFIG_WLAN			1
 #if CONFIG_WLAN
 #define CONFIG_LWIP_LAYER	1
@@ -159,6 +158,7 @@
 #define CONFIG_WLAN_CONNECT_CB 1
 
 //#define CONFIG_FATFS_EN	1 // FatFs & SD
+
 #ifdef CONFIG_FATFS_EN
 // fatfs version
 #define FATFS_R_10C

@@ -4,7 +4,7 @@
 #include "uptime.h"
 
 #ifndef VERBOSE_LOGGING
-#define VERBOSE_LOGGING 1
+#define VERBOSE_LOGGING 0
 #endif
 
 #ifndef LOG_EOL

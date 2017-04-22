@@ -60,7 +60,7 @@ int ICACHE_FLASH_ATTR cgiTestbed(HttpdConnData *connData) {
 			for (x=0; x<l; x++) buff[x]=((x^(state->sendPos>>10))&0x1F)+'0';
 			httpdSend(connData, buff, l);
 			state->sendPos+=l;
-			printf("Test: Uploaded %d/%d bytes\n", state->sendPos, state->len);
+			//printf("Test: Uploaded %d/%d bytes\n", state->sendPos, state->len);
 			if (state->len<=state->sendPos) {
 				if (state) free(state);
 				return HTTPD_CGI_DONE; 
@@ -72,7 +72,7 @@ int ICACHE_FLASH_ATTR cgiTestbed(HttpdConnData *connData) {
 	if (connData->requestType==HTTPD_METHOD_POST) {
 		if (connData->post->len!=connData->post->received) {
 			//Still receiving data. Ignore this.
-			printf("Test: got %d/%d bytes\n", connData->post->received, connData->post->len);
+			//printf("Test: got %d/%d bytes\n", connData->post->received, connData->post->len);
 			return HTTPD_CGI_MORE;
 		} else {
 			httpdStartResponse(connData, 200);

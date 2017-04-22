@@ -9,6 +9,7 @@
 #include "FreeRTOS.h"
 #include "diag.h"
 #include "wifi_api.h"
+#include "wifi_conf.h"
 #include "rtl8195a/rtl_libc.h"
 #include "hal_platform.h"
 
@@ -49,7 +50,7 @@ LOCAL void fATPN(int argc, char *argv[]){
 				wifi_st_cfg.security_type = RTW_SECURITY_OPEN;
 			}
 			if(argc > 3) {
-				wifi_st_cfg.security_type = translate_rtw_security(atoi(argv[3]));
+				wifi_ap_cfg.security_type = translate_rtw_security(atoi(argv[3]));
 			}
 			if(argc > 4) {
 				wifi_st_cfg.autoreconnect = atoi(argv[3]);
@@ -92,7 +93,8 @@ LOCAL void fATPA(int argc, char *argv[]){
 				wifi_ap_cfg.security_type = RTW_SECURITY_OPEN;
 			}
 			if(argc > 3) {
-				wifi_ap_cfg.security_type = translate_rtw_security(atoi(argv[3]));
+				if(argv[3][0]=='0') wifi_st_cfg.security_type = RTW_SECURITY_OPEN;
+				else wifi_st_cfg.security_type = RTW_SECURITY_WEP_PSK;
 			}
 			if(argc > 4) {
 				wifi_ap_cfg.channel = atoi(argv[4]);
@@ -286,9 +288,42 @@ LOCAL void fATSN(int argc, char *argv[])
 	};
 }
 
+#if defined(CONFIG_ENABLE_WPS_AP) && CONFIG_ENABLE_WPS_AP
+extern void cmd_ap_wps(int argc, char **argv);
+extern void cmd_wps(int argc, char **argv);
+//extern void cmd_wifi_on(int argc, char **argv);
+#endif
+#if CONFIG_ENABLE_P2P
+extern void cmd_wifi_p2p_start(int argc, char **argv);
+extern void cmd_wifi_p2p_stop(int argc, char **argv);
+extern void cmd_p2p_listen(int argc, char **argv);
+extern void cmd_p2p_find(int argc, char **argv);
+extern void cmd_p2p_peers(int argc, char **argv);
+extern void cmd_p2p_info(int argc, char **argv);
+extern void cmd_p2p_disconnect(int argc, char **argv);
+extern void cmd_p2p_connect(int argc, char **argv);
+extern void cmd_wifi_p2p_auto_go_start(int argc, char **argv);
+extern void cmd_p2p_peers(int argc, char **argv);
+#endif //CONFIG_ENABLE_P2P
+
+
 MON_RAM_TAB_SECTION COMMAND_TABLE console_cmd_wifi_api[] = {
 		{"ATPN", 1, fATPN, "=<SSID>[,password[,encryption[,auto-reconnect[,reconnect pause]]]: WIFI Connect to AP"},
 		{"ATPA", 1, fATPA, "=<SSID>[,password[,encryption[,channel[,hidden[,max connections]]]]]: Start WIFI AP"},
+#if defined(CONFIG_ENABLE_WPS_AP) && CONFIG_ENABLE_WPS_AP
+		{"WPS_AP", 1, cmd_ap_wps, "=<pbc/pin>[,pin]: WiFi AP WPS"},
+		{"WPS_ST", 1, cmd_wps, "=<pbc/pin>[,pin]: WiFi Station WPS"},
+#endif
+#if CONFIG_ENABLE_P2P
+		{"P2P_START", 0, cmd_wifi_p2p_start, ": p2p start" },
+		{"P2P_ASTART", 0, cmd_wifi_p2p_auto_go_start, ": p2p auto go start" },
+		{"P2P_STOP", 0, cmd_wifi_p2p_stop, ": p2p stop"},
+		{"P2P_PEERS", 0, cmd_p2p_peers, ": p2p peers" },
+		{"P2P_FIND", 0, cmd_p2p_find, ": p2p find"},
+		{"P2P_INFO", 0, cmd_p2p_info, ": p2p info"},
+		{"P2P_DISCCONNECT", 0, cmd_p2p_disconnect, ": p2p disconnect"},
+		{"P2P_CONNECT", 0, cmd_p2p_connect, ": p2p connect"},
+#endif
 		{"ATWR", 0, fATWR, ": WIFI Connect, Disconnect"},
 //		{"ATON", 0, fATON, ": Open connections"},
 //		{"ATOF", 0, fATOF, ": Close connections"},

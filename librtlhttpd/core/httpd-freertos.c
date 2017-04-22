@@ -8,12 +8,13 @@ Thanks to my collague at Espressif for writing the foundations of this code.
 
 
 //#include <esp8266.h>
-
+#define ICACHE_FLASH_ATTR
 #include <stdint.h>
 #include <string.h>
 
 #include "httpd.h"
 #include "httpd-platform.h"
+
 
 #include "queue.h"
 #include "semphr.h"

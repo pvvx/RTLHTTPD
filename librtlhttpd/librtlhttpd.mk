@@ -10,21 +10,23 @@ HTTPD_MAX_CONNECTIONS ?= 5
 #For FreeRTOS
 HTTPD_STACKSIZE ?= 4096
 
+LIBRTLHTTPD_PATH ?= librtlhttpd/
+
 
 FREERTOS ?= yes
 
-INCLUDES += librtlhttpd/include librtlhttpd/espfs librtlhttpd/lib/heatshrink
+INCLUDES += $(LIBRTLHTTPD_PATH)include $(LIBRTLHTTPD_PATH)espfs $(LIBRTLHTTPD_PATH)lib/heatshrink
 
-ADD_SRC_C += librtlhttpd/soc/soc_rtl8710_httpd_func.c
-ADD_SRC_C += librtlhttpd/espfs/espfs.c librtlhttpd/espfs/heatshrink_decoder.c
-#ADD_SRC_C += librtlhttpd/core/sha1.c 
-ADD_SRC_C += librtlhttpd/core/base64.c librtlhttpd/core/auth.c
-ADD_SRC_C += librtlhttpd/core/httpd-freertos.c librtlhttpd/core/httpd.c
-ADD_SRC_C += librtlhttpd/core/httpdespfs.c
-ADD_SRC_C += librtlhttpd/core/uptime.c
-ADD_SRC_C += librtlhttpd/util/captdns.c
-ADD_SRC_C += librtlhttpd/util/cgiwebsocket.c
-ADD_SRC_C += librtlhttpd/util/cgiflash_rtl.c
+ADD_SRC_C += $(LIBRTLHTTPD_PATH)soc/soc_rtl8710_httpd_func.c
+ADD_SRC_C += $(LIBRTLHTTPD_PATH)espfs/espfs.c $(LIBRTLHTTPD_PATH)espfs/heatshrink_decoder.c
+#ADD_SRC_C += $(LIBRTLHTTPD_PATH)core/sha1.c 
+ADD_SRC_C += $(LIBRTLHTTPD_PATH)core/base64.c $(LIBRTLHTTPD_PATH)core/auth.c
+ADD_SRC_C += $(LIBRTLHTTPD_PATH)core/httpd-freertos.c $(LIBRTLHTTPD_PATH)core/httpd.c
+ADD_SRC_C += $(LIBRTLHTTPD_PATH)core/httpdespfs.c
+ADD_SRC_C += $(LIBRTLHTTPD_PATH)core/uptime.c
+ADD_SRC_C += $(LIBRTLHTTPD_PATH)util/captdns.c
+ADD_SRC_C += $(LIBRTLHTTPD_PATH)util/cgiwebsocket.c
+ADD_SRC_C += $(LIBRTLHTTPD_PATH)util/cgiflash_rtl.c
 
 
 CFLAGS += -DFREERTOS
