@@ -49,6 +49,9 @@ extern rtw_mode_t wifi_mode;
 rtw_network_info_t wifi;
 
 
+
+
+
 #define CONNTRY_IDLE 0
 #define CONNTRY_WORKING 1
 #define CONNTRY_SUCCESS 2

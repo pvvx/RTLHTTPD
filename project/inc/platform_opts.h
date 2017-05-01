@@ -3,7 +3,6 @@
  *This file contains general configurations for ameba platform
  ******************************************************************************
 */
-
 #ifndef __PLATFORM_OPTS_H__
 #define __PLATFORM_OPTS_H__
 
@@ -169,4 +168,4 @@
 #define CONFIG_SDIO_HOST_EN   1
 #endif
 
-#endif //__PLATFORM_OPTS_H__
+#endif // __PLATFORM_OPTS_H__

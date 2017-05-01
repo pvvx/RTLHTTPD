@@ -320,10 +320,10 @@ static void captdnsTask(void *pvParameters) {
 
 void captdnsInit(void) {
 #ifdef ESP32
-	xTaskCreate(captdnsTask, (const char *)"captdns_task", 1200, NULL, CAPDNS_PRIORITY, NULL);
+	xTaskCreate(captdnsTask, (const char *)"captdns", 1200, NULL, CAPDNS_PRIORITY, NULL);
 #else
 	info("Starting captive portal...");
-	xTaskCreate(captdnsTask, (const signed char *)"captdns_task", 1200, NULL, CAPDNS_PRIORITY, NULL);
+	xTaskCreate(captdnsTask, (const signed char *)"captdns", 1200, NULL, CAPDNS_PRIORITY, NULL);
 #endif
 }
 

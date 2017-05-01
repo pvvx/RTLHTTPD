@@ -25,9 +25,7 @@ typedef struct UploadState {
 } UploadState_t;
 
 typedef struct {
-	//uint32_t start;  // start flash address
 	uint32_t flash_size;
-
 } CgiUploadFlashRtl_t;
 
 int cgiUploadFirmware(HttpdConnData *connData);

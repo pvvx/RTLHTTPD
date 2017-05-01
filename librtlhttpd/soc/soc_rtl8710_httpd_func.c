@@ -43,12 +43,14 @@ return (__httpd_tolower(*us1) - __httpd_tolower(*us2));
  */
 SpiFlashOpResult spi_flash_read(uint32_t src_addr, uint32_t *des_addr, uint32_t size)
 {
+#if ESPFS_IN_RAM
+	memcpy((void*)des_addr, (void*)src_addr, size);
+#else
 	device_mutex_lock(RT_DEV_LOCK_FLASH);
-
 	flash_burst_read(&flashobj, src_addr, size, (uint8_t *)des_addr);
 	//flash_stream_read(&flashobj, src_addr, size, (uint8_t *)des_addr);
-
 	device_mutex_unlock(RT_DEV_LOCK_FLASH);
+#endif
 	return SPI_FLASH_RESULT_OK;
 }
 

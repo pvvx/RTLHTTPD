@@ -68,9 +68,6 @@ void user_init_thrd(void) {
 
 	wifi_init();
 
-
-	_LwIP_Init();
-
 	netbios_init();
 
 	captdnsInit();

@@ -15,7 +15,6 @@ Thanks to my collague at Espressif for writing the foundations of this code.
 #include "httpd.h"
 #include "httpd-platform.h"
 
-
 #include "queue.h"
 #include "semphr.h"
 

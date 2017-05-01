@@ -12,7 +12,6 @@ typedef RtosConnType* ConnTypePtr;
 #include "autoconf.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "diag.h"
 #include "soc_rtl8710_httpd_func.h"
 #include "rtl8195a.h"
 #include "logging.h"

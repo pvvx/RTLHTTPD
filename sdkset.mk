@@ -85,7 +85,7 @@ BOOT_C =
 
 #bootloader
 SRC_C += sdk/component/soc/realtek/8195a/fwlib/ram_lib/rtl_bios_data.c
-BOOT_C += sdk/component/soc/realtek/8195a/fwlib/ram_lib/rtl_boot.c 
+#BOOT_C += sdk/component/soc/realtek/8195a/fwlib/ram_lib/rtl_boot.c 
 
 #cmsis
 SRC_C += sdk/component/soc/realtek/8195a/cmsis/device/system_8195a.c
@@ -111,6 +111,8 @@ SRC_C += sdk/component/common/api/wifi/wifi_promisc.c
 SRC_C += sdk/component/common/api/wifi/wifi_simple_config.c
 SRC_C += sdk/component/common/api/wifi/wifi_util.c
 SRC_C += sdk/component/common/api/lwip_netconf.c
+SRC_C += sdk/component/common/api/wifi_api.c 
+SRC_C += sdk/component/common/api/wifi_api_scan.c 
 
 #network - app
 #SRC_C += sdk/component/common/utilities/ssl_client.c
@@ -390,22 +392,23 @@ ADD_SRC_C += sdk/component/soc/realtek/8195a/misc/rtl_std_lib/lib_rtlstd/ram_pvv
 #ADD_SRC_C += sdk/component/common/drivers/sdio/realtek/sdio_host/src/sdio_host.c 
 #ADD_SRC_C += sdk/component/soc/realtek/8195a/fwlib/src/hal_sdio_host.c
 #ADD_SRC_C += sdk/component/common/file_system/fatfs/disk_if/src/sdcard.c
-ADD_SRC_C += sdk/component/common/api/wifi_api.c 
 #=============================================
 # PROJECT
 #=============================================
 INCLUDES += project/inc/user
+# bootloader
+BOOT_C += project/src/rtl_boot_s.c
 # openocd freertos helper
 ADD_SRC_C += project/src/FreeRTOS-openocd.c
-#user main
+# user main
 ADD_SRC_C += project/src/user/main.c
-ADD_SRC_C += project/src/user/user_init.c
-#console
+#ADD_SRC_C += project/src/user/user_init.c
+# console
 ADD_SRC_C += project/src/console/atcmd_user.c
 #ADD_SRC_C += project/src/console/spi_tst.c
 #ADD_SRC_C += project/src/console/wlan_tst.c
 ADD_SRC_C += project/src/console/wifi_console.c
-#httpd
+# httpd
 ADD_SRC_C += project/src/user/http_server.c
 ADD_SRC_C += project/src/user/cgi-test.c
 ADD_SRC_C += project/src/user/cgiwifi_rtl.c

@@ -105,14 +105,14 @@ void write_buffer(UploadState_t* state)
 
 		if (!locked)
 			device_mutex_lock(RT_DEV_LOCK_FLASH);
-		if ((vLen & 3)==0) {
+		/*if ((vLen & 3)==0) {
 			dbg("PA: %x\t%x\t%x", vAddr, vLen, state->currentAddress);
 			// aligned multi-page write (fast)
 			flash_burst_write(&flashobj, vAddr, vLen,
 					state->pageData + (vAddr - state->currentAddress));
 		}
-		else {
-			dbg("PU: %x\t%x\t%x", vAddr, vLen, state->currentAddress);
+		else*/ {
+			/*dbg*/("PU: %x\t%x\t%x", vAddr, vLen, state->currentAddress);
 			// unaligned multi-page write (slow)
 			flash_stream_write(&flashobj, vAddr, vLen,
 					state->pageData + (vAddr - state->currentAddress));
