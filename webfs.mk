@@ -1,6 +1,7 @@
 THISDIR:=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-include paths.mk
+include userset.mk
+include $(SDK_PATH)paths.mk
 
 USE_HEATSHRINK ?= yes
 GZIP_COMPRESSION ?= no

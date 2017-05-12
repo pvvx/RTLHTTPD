@@ -10,7 +10,10 @@ ifeq ("$(USE_HEATSHRINK)","yes")
 CFLAGS += -DESPFS_HEATSHRINK
 endif
 
-CC=gccOBJS=main.o heatshrink_encoder.o
+CC=gcc
+
+OBJS=main.o heatshrink_encoder.o
+
 TARGET=mkespfsimage
 
 $(TARGET): $(OBJS)

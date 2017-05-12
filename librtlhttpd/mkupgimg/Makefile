@@ -1,3 +1,5 @@
+CC=GCC
+
 mkupgimg: mkupgimg.c
 	$(CC) -o $@ $^
 
